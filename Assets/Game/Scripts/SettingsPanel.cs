@@ -11,10 +11,11 @@ namespace CatDefender
 
         void Start()
         {
-            music.onClick.AddListener(() => Toggle(ref Profile.Data.music));
+            music.onClick.AddListener(ToggleMusic);
             sound.onClick.AddListener(ToggleSound);
-            vibration.onClick.AddListener(() => Toggle(ref Profile.Data.vibration));
+            vibration.onClick.AddListener(ToggleVibration);
             language.onClick.AddListener(Loc.ToggleLanguage);
+            AudioManager.SetMusicEnabled(Profile.Data.music);
         }
 
         void OnEnable()
@@ -25,10 +26,18 @@ namespace CatDefender
 
         void OnDisable() => Profile.Changed -= Refresh;
 
-        static void Toggle(ref bool flag)
+        static void ToggleMusic()
         {
-            flag = !flag;
+            Profile.Data.music = !Profile.Data.music;
             Profile.Save();
+            AudioManager.SetMusicEnabled(Profile.Data.music);
+        }
+
+        static void ToggleVibration()
+        {
+            Profile.Data.vibration = !Profile.Data.vibration;
+            Profile.Save();
+            if (Profile.Data.vibration) AudioManager.Vibrate();
         }
 
         static void ToggleSound()

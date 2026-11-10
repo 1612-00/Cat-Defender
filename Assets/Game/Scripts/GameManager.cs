@@ -92,6 +92,7 @@ namespace CatDefender
         void Awake()
         {
             Time.timeScale = 1f;
+            AudioManager.SetGamePaused(false);
             Session.LevelIndex = Mathf.Clamp(Session.LevelIndex, 0, levels.Length - 1);
             level = levels[Session.LevelIndex];
             if (level.background != null) background.sprite = level.background;
@@ -197,7 +198,11 @@ namespace CatDefender
             Enemy e = Instantiate(enemyPrefab, pos, Quaternion.identity);
             e.Init(data, this, lane, level.enemyHpScale, level.rewardScale);
             enemies.Add(e);
-            if (data.isBoss) AudioManager.Play(AudioCue.BossAppear);
+            if (data.isBoss)
+            {
+                AudioManager.SetBossActive(true);
+                AudioManager.Play(AudioCue.BossAppear);
+            }
         }
 
         /// <summary>
@@ -268,6 +273,14 @@ namespace CatDefender
             Wallet.Add(Perks.Coins(reward));
             AudioManager.Play(enemy.IsBoss ? AudioCue.BossExplosion : AudioCue.EnemyHit);
             AudioManager.PlayCoin();
+            if (enemy.IsBoss)
+            {
+                AudioManager.Vibrate();
+                bool bossRemains = false;
+                for (int i = 0; i < enemies.Count; i++)
+                    if (enemies[i].IsBoss) { bossRemains = true; break; }
+                if (!bossRemains) AudioManager.SetBossActive(false);
+            }
         }
 
         public void DamageWall(int amount)
@@ -278,6 +291,7 @@ namespace CatDefender
             if (hpBeforeHit > wall.MaxHp * 0.25f && wall.Hp <= wall.MaxHp * 0.25f && wall.Hp > 0)
                 AudioManager.Play(AudioCue.WallCritical);
             AudioManager.Play(AudioCue.WallHit);
+            AudioManager.Vibrate();
             if (wall.Hp <= 0) End(GameState.Lost);
         }
 
@@ -370,7 +384,11 @@ namespace CatDefender
             Changed?.Invoke();
         }
 
-        void UpdateTimeScale() => Time.timeScale = Paused ? 0f : 1f;
+        void UpdateTimeScale()
+        {
+            Time.timeScale = Paused ? 0f : 1f;
+            AudioManager.SetGamePaused(Paused);
+        }
 
         public void Restart() => LoadLevel(Session.LevelIndex);
 
@@ -378,12 +396,14 @@ namespace CatDefender
         {
             Session.LevelIndex = Mathf.Clamp(index, 0, levels.Length - 1);
             Time.timeScale = 1f;
+            AudioManager.SetGamePaused(false);
             SceneManager.LoadScene("Gameplay");
         }
 
         public void GoToMenu()
         {
             Time.timeScale = 1f;
+            AudioManager.SetGamePaused(false);
             SceneManager.LoadScene("Menu");
         }
 
@@ -393,6 +413,8 @@ namespace CatDefender
             State = result;
             UserPaused = false;
             Time.timeScale = 1f;
+            AudioManager.SetGamePaused(false);
+            AudioManager.SetResultActive(true);
             ShowLaneWarnings(false);
             GrantRewards(result == GameState.Won);
             AudioManager.Play(result == GameState.Won ? AudioCue.LevelComplete : AudioCue.GameOver);

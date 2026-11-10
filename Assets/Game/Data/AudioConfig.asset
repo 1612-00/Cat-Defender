@@ -1,0 +1,335 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e26501c7eb28252459e8752d9aabb23a, type: 3}
+  m_Name: AudioConfig
+  m_EditorClassIdentifier: CatDefender::CatDefender.AudioConfig
+  cues:
+  - cue: 0
+    clip: {fileID: 8300000, guid: fc9cf6a8ab2bfc54e8fd09cdf10752bf, type: 3}
+    volume: 0.18
+    pitchVariation: 0
+    volumeVariation: 0
+    minInterval: 0.06
+    priority: 25
+    bus: 1
+  - cue: 1
+    clip: {fileID: 8300000, guid: fd68b6cd99533a44b8cd911462a5571b, type: 3}
+    volume: 0.18
+    pitchVariation: 0
+    volumeVariation: 0
+    minInterval: 0.06
+    priority: 25
+    bus: 1
+  - cue: 2
+    clip: {fileID: 8300000, guid: c1883882e6f1787479f8a9f4f8fc1347, type: 3}
+    volume: 0.18
+    pitchVariation: 0
+    volumeVariation: 0
+    minInterval: 0.06
+    priority: 25
+    bus: 1
+  - cue: 3
+    clip: {fileID: 8300000, guid: 10ea4b0459fa6364eacf28dca68b736a, type: 3}
+    volume: 0.3
+    pitchVariation: 0
+    volumeVariation: 0
+    minInterval: 0.06
+    priority: 25
+    bus: 1
+  - cue: 4
+    clip: {fileID: 8300000, guid: 00c83ff07acb7824b812edba4839712a, type: 3}
+    volume: 0.3
+    pitchVariation: 0
+    volumeVariation: 0
+    minInterval: 0.06
+    priority: 25
+    bus: 1
+  - cue: 5
+    clip: {fileID: 8300000, guid: 417b9f688694b9241b4fd7db4f0166ca, type: 3}
+    volume: 0.3
+    pitchVariation: 0
+    volumeVariation: 0
+    minInterval: 0.06
+    priority: 25
+    bus: 1
+  - cue: 6
+    clip: {fileID: 8300000, guid: 6053c72594b835940a9f757310dd56e6, type: 3}
+    volume: 0.3
+    pitchVariation: 0
+    volumeVariation: 0
+    minInterval: 0.06
+    priority: 25
+    bus: 1
+  - cue: 7
+    clip: {fileID: 8300000, guid: eeb70bf58e9de67419e6c756a0398c8d, type: 3}
+    volume: 0.18
+    pitchVariation: 0
+    volumeVariation: 0
+    minInterval: 0.06
+    priority: 25
+    bus: 1
+  - cue: 8
+    clip: {fileID: 8300000, guid: 2922985db2e758a40a1e79668467d575, type: 3}
+    volume: 0.18
+    pitchVariation: 0
+    volumeVariation: 0
+    minInterval: 0.5
+    priority: 25
+    bus: 0
+  - cue: 9
+    clip: {fileID: 8300000, guid: 7224cf0e28ffde14897154630052314e, type: 3}
+    volume: 0.34
+    pitchVariation: 0.06
+    volumeVariation: 0.1
+    minInterval: 0.1
+    priority: 5
+    bus: 0
+  - cue: 10
+    clip: {fileID: 8300000, guid: 37a0f4928f194eb44b3682790a37c350, type: 3}
+    volume: 0.34
+    pitchVariation: 0.06
+    volumeVariation: 0.1
+    minInterval: 0.1
+    priority: 5
+    bus: 0
+  - cue: 11
+    clip: {fileID: 8300000, guid: bfd0b3744bf2cc546a0676d6a3726af9, type: 3}
+    volume: 0.34
+    pitchVariation: 0.06
+    volumeVariation: 0.1
+    minInterval: 0.1
+    priority: 5
+    bus: 0
+  - cue: 12
+    clip: {fileID: 8300000, guid: 48ad5bd48b0a2c64fa1524fdd7bc0c84, type: 3}
+    volume: 0.34
+    pitchVariation: 0.06
+    volumeVariation: 0.1
+    minInterval: 0.1
+    priority: 5
+    bus: 0
+  - cue: 13
+    clip: {fileID: 8300000, guid: 1f95e321356868b4bab4fed99a274f79, type: 3}
+    volume: 0.34
+    pitchVariation: 0.06
+    volumeVariation: 0.1
+    minInterval: 0.08
+    priority: 25
+    bus: 0
+  - cue: 14
+    clip: {fileID: 8300000, guid: e81c694f82a66b647b9fe59a43e71a12, type: 3}
+    volume: 0.34
+    pitchVariation: 0
+    volumeVariation: 0
+    minInterval: 0.08
+    priority: 25
+    bus: 0
+  - cue: 15
+    clip: {fileID: 8300000, guid: 36c0b994d078aaf45a4f1ac993087660, type: 3}
+    volume: 0.4
+    pitchVariation: 0
+    volumeVariation: 0
+    minInterval: 0.08
+    priority: 25
+    bus: 0
+  - cue: 16
+    clip: {fileID: 8300000, guid: b73a2f1c0cdcbba45a4bc9e15272fca2, type: 3}
+    volume: 0.7
+    pitchVariation: 0
+    volumeVariation: 0
+    minInterval: 0.06
+    priority: 100
+    bus: 0
+  - cue: 17
+    clip: {fileID: 8300000, guid: e81c694f82a66b647b9fe59a43e71a12, type: 3}
+    volume: 0.34
+    pitchVariation: 0.06
+    volumeVariation: 0.1
+    minInterval: 0.08
+    priority: 25
+    bus: 0
+  - cue: 18
+    clip: {fileID: 8300000, guid: 4dc4e4dc0521ace4cb05accfda97855a, type: 3}
+    volume: 0.34
+    pitchVariation: 0.06
+    volumeVariation: 0.1
+    minInterval: 0.08
+    priority: 25
+    bus: 0
+  - cue: 19
+    clip: {fileID: 8300000, guid: c603513ad3aa1834681f0f62b3160e0b, type: 3}
+    volume: 0.22
+    pitchVariation: 0.06
+    volumeVariation: 0.1
+    minInterval: 0.08
+    priority: 5
+    bus: 0
+  - cue: 20
+    clip: {fileID: 8300000, guid: 8f50a14b307b9e340be6f0ab10594a07, type: 3}
+    volume: 0.22
+    pitchVariation: 0.06
+    volumeVariation: 0.1
+    minInterval: 0.08
+    priority: 5
+    bus: 0
+  - cue: 21
+    clip: {fileID: 8300000, guid: d9cb4f174c84d2e4c8f148e6544f574b, type: 3}
+    volume: 0.32
+    pitchVariation: 0
+    volumeVariation: 0
+    minInterval: 0.06
+    priority: 25
+    bus: 0
+  - cue: 22
+    clip: {fileID: 8300000, guid: b095c18a58784eb4480de6e93a858c74, type: 3}
+    volume: 0.32
+    pitchVariation: 0
+    volumeVariation: 0
+    minInterval: 0.06
+    priority: 25
+    bus: 0
+  - cue: 23
+    clip: {fileID: 8300000, guid: 4a375e650f37d044a952cc90884e0d6d, type: 3}
+    volume: 0.32
+    pitchVariation: 0
+    volumeVariation: 0
+    minInterval: 0.06
+    priority: 25
+    bus: 1
+  - cue: 24
+    clip: {fileID: 8300000, guid: f29ae58482318b74695653bbd1201801, type: 3}
+    volume: 0.26
+    pitchVariation: 0
+    volumeVariation: 0
+    minInterval: 0.06
+    priority: 25
+    bus: 0
+  - cue: 25
+    clip: {fileID: 8300000, guid: 5954ee885f0c4964ba0173c6581d9cc5, type: 3}
+    volume: 0.26
+    pitchVariation: 0
+    volumeVariation: 0
+    minInterval: 0.06
+    priority: 25
+    bus: 0
+  - cue: 26
+    clip: {fileID: 8300000, guid: 39920e053b787bc4d9261b03bda0b557, type: 3}
+    volume: 0.4
+    pitchVariation: 0
+    volumeVariation: 0
+    minInterval: 0.06
+    priority: 25
+    bus: 0
+  - cue: 27
+    clip: {fileID: 8300000, guid: 198bd99332e70784992b196f74bab71d, type: 3}
+    volume: 0.26
+    pitchVariation: 0
+    volumeVariation: 0
+    minInterval: 0.06
+    priority: 25
+    bus: 0
+  - cue: 28
+    clip: {fileID: 8300000, guid: e10640951d0bafa499c187c696bd1a9a, type: 3}
+    volume: 0.7
+    pitchVariation: 0
+    volumeVariation: 0
+    minInterval: 0.06
+    priority: 100
+    bus: 0
+  - cue: 29
+    clip: {fileID: 8300000, guid: 41f702a56168b7f418128a3c3a4c61c4, type: 3}
+    volume: 0.7
+    pitchVariation: 0
+    volumeVariation: 0
+    minInterval: 0.06
+    priority: 100
+    bus: 0
+  - cue: 30
+    clip: {fileID: 8300000, guid: 83c15a48304927843b99be2cf0cf5c1a, type: 3}
+    volume: 0.7
+    pitchVariation: 0
+    volumeVariation: 0
+    minInterval: 0.06
+    priority: 80
+    bus: 0
+  - cue: 31
+    clip: {fileID: 8300000, guid: 137760b46f2c4d44888a50cbe54d32b4, type: 3}
+    volume: 0.7
+    pitchVariation: 0
+    volumeVariation: 0
+    minInterval: 0.06
+    priority: 100
+    bus: 0
+  - cue: 32
+    clip: {fileID: 8300000, guid: cd4d6039d72efea4bab1044b34fee9a8, type: 3}
+    volume: 0.26
+    pitchVariation: 0
+    volumeVariation: 0
+    minInterval: 0.06
+    priority: 25
+    bus: 1
+  - cue: 33
+    clip: {fileID: 8300000, guid: 1a76b3621a55f1d46b1b6bf14f692fae, type: 3}
+    volume: 0.26
+    pitchVariation: 0
+    volumeVariation: 0
+    minInterval: 0.06
+    priority: 25
+    bus: 0
+  - cue: 34
+    clip: {fileID: 8300000, guid: b940354f893e2334bb8b55e7ccbb29b8, type: 3}
+    volume: 0.65
+    pitchVariation: 0
+    volumeVariation: 0
+    minInterval: 0.25
+    priority: 100
+    bus: 0
+  - cue: 35
+    clip: {fileID: 8300000, guid: 6af51c981a385184da7fe504e59ad774, type: 3}
+    volume: 0.7
+    pitchVariation: 0
+    volumeVariation: 0
+    minInterval: 1
+    priority: 100
+    bus: 0
+  - cue: 36
+    clip: {fileID: 8300000, guid: 3802fbaccb9a8d748a7adc3d91faceeb, type: 3}
+    volume: 0.26
+    pitchVariation: 0
+    volumeVariation: 0
+    minInterval: 1
+    priority: 80
+    bus: 0
+  - cue: 37
+    clip: {fileID: 8300000, guid: a09947789e72ca8458ff33e6c485c8fa, type: 3}
+    volume: 0.26
+    pitchVariation: 0
+    volumeVariation: 0
+    minInterval: 0.06
+    priority: 25
+    bus: 0
+  - cue: 38
+    clip: {fileID: 8300000, guid: d9cb4f174c84d2e4c8f148e6544f574b, type: 3}
+    volume: 0.32
+    pitchVariation: 0
+    volumeVariation: 0
+    minInterval: 0.06
+    priority: 25
+    bus: 0
+  menuMusic: {fileID: 8300000, guid: 564b1fbb9272fc047b82a4af03899a71, type: 3}
+  gameplayMusic: {fileID: 8300000, guid: 356d035491531404c9f19ef535b9728d, type: 3}
+  sfxVoiceCount: 8
+  menuMusicVolume: 0.16
+  gameplayMusicVolume: 0.14
+  bossMusicMultiplier: 0.72
+  resultMusicMultiplier: 0.25
+  musicFadeSeconds: 1.25

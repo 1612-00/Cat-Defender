@@ -168,7 +168,7 @@ Bản chơi được trọn vẹn (hết mốc 4): 50 giờ AI, khoảng 2 tuầ
 
 | # | Đầu việc | Ước tính | Thực tế |
 |---|---|---|---|
-| 4.1 | Hệ thống âm thanh với điểm gắn cho mọi sự kiện, dùng các clip đã cung cấp | 2 | Hoàn tất: bổ sung 12 cue theo note, âm lượng/giới hạn lặp riêng; 33/33 EditMode test đạt. Giờ thực tế chưa đo. |
+| 4.1 | Hệ thống âm thanh với điểm gắn cho mọi sự kiện, dùng các clip đã cung cấp | 2 | Hoàn tất: 39 cue trong AudioConfig, 2 nhạc nền, pool SFX có ưu tiên/biến thiên, pause và rung; hiệu ứng mono/nén, nhạc streaming; 36/36 EditMode test đạt. Giờ thực tế chưa đo; cần nghe thử trên thiết bị. |
 | 4.2 | Cảm giác chơi: rung màn hình, số sát thương bay, hiệu ứng ghép, chuyển động UI | 2 | |
 | 4.3 | Hướng dẫn chơi ở level 1–3 | 2,5 | |
 | 4.4 | Tối ưu: sprite atlas, pool đối tượng, giảm dung lượng texture, đo khung hình | 2,5 | |

@@ -126,7 +126,11 @@ namespace CatDefender
 
             int to = SlotAt(world);
             MoveResult result = to < 0 ? MoveResult.None : board.Move(from, to);
-            if (result == MoveResult.Merged) AudioManager.Play(AudioCue.Merge);
+            if (result == MoveResult.Merged)
+            {
+                AudioManager.Play(AudioCue.Merge);
+                AudioManager.Vibrate();
+            }
             else if (result != MoveResult.None) AudioManager.Play(AudioCue.DropCat);
             switch (result)
             {

@@ -18,7 +18,7 @@ Giao tiếp với người dùng bằng **tiếng Việt**.
 - **Test:** Unity Test Framework, đặt trong `Assets/Tests/EditMode/` và `Assets/Tests/PlayMode/`. Test đặt ngoài `Assets/` sẽ không được biên dịch.
 - **Nền tảng đích:** Android và iOS, màn hình ngang.
 - **Ngôn ngữ trong game:** tiếng Anh và tiếng Việt. Mọi chuỗi hiển thị đi qua bảng chuỗi, không viết cứng.
-- **Âm thanh:** chủ dự án thêm sau. Code gọi âm thanh qua một điểm chung, clip để trống thì bỏ qua.
+- **Âm thanh:** SFX/nhạc dùng `AudioManager`; cue, âm lượng, ưu tiên và nhạc nền cấu hình trong `Assets/Game/Data/AudioConfig.asset`, được `GameBuilder` cập nhật khi build. Clip thiếu được báo lỗi rõ ràng.
 - **Doanh thu bản đầu:** chỉ quảng cáo, không có mua trong game.
 - `project.yaml` chưa được tạo. Chạy `/setup-engine` nếu cần dùng các skill đọc cấu hình từ file đó.
 
@@ -45,7 +45,7 @@ Giao tiếp với người dùng bằng **tiếng Việt**.
 - `Preview/`: ảnh mẫu bố cục màn chơi và UI, dùng làm tham chiếu khi dựng scene.
 - `Spine/`, `Json Atlas/`: bản Spine. Dự án dùng chuỗi PNG, không cài spine-unity.
 - Font: Passion One (Google Fonts), chưa được thêm vào project.
-- **Không có âm thanh hay nhạc.**
+- Âm thanh và hai nhạc nền nằm trong `Assets/Game/Audio/`; không có hiệu ứng riêng cho mọi hành động (ví dụ tiếng đấm Cat Boxing), xem [design/audio.md](design/audio.md).
 
 ## Cấu trúc game
 

@@ -77,6 +77,41 @@ namespace CatDefender.EditorTools
             Debug.Log($"[GameBuilder] Sprite imports fixed: {changed}/{paths.Length}");
         }
 
+        [MenuItem("CatDefender/1. Fix Audio Imports")]
+        public static void FixAudioImports()
+        {
+            string[] paths = Directory.GetFiles($"{Root}/Audio", "*.*", SearchOption.AllDirectories)
+                .Where(path => path.EndsWith(".ogg", StringComparison.OrdinalIgnoreCase) ||
+                               path.EndsWith(".wav", StringComparison.OrdinalIgnoreCase) ||
+                               path.EndsWith(".mp3", StringComparison.OrdinalIgnoreCase))
+                .Select(path => path.Replace('\\', '/')).ToArray();
+
+            int changed = 0;
+            foreach (string path in paths)
+            {
+                var importer = AssetImporter.GetAtPath(path) as AudioImporter;
+                if (importer == null) continue;
+
+                bool isMusic = path.EndsWith("/main_menu_music_mastered.mp3", StringComparison.OrdinalIgnoreCase) ||
+                               path.EndsWith("/DST-TowerDefenseTheme.mp3", StringComparison.OrdinalIgnoreCase);
+                AudioImporterSampleSettings settings = importer.defaultSampleSettings;
+                AudioClipLoadType loadType = isMusic ? AudioClipLoadType.Streaming : AudioClipLoadType.CompressedInMemory;
+                if (settings.loadType == loadType && importer.forceToMono == !isMusic &&
+                    settings.preloadAudioData == !isMusic && importer.loadInBackground == isMusic)
+                    continue;
+
+                settings.loadType = loadType;
+                settings.preloadAudioData = !isMusic;
+                importer.defaultSampleSettings = settings;
+                importer.forceToMono = !isMusic;
+                importer.loadInBackground = isMusic;
+                importer.SaveAndReimport();
+                changed++;
+            }
+
+            Debug.Log($"[GameBuilder] Audio imports fixed: {changed}/{paths.Length}");
+        }
+
         [MenuItem("CatDefender/2. Build Game")]
         public static void Build()
         {
@@ -639,7 +674,22 @@ namespace CatDefender.EditorTools
 
         static void BuildAudioManager()
         {
+            FixAudioImports();
+            AudioConfig config = BuildAudioConfig();
             AudioManager manager = new GameObject("AudioManager").AddComponent<AudioManager>();
+            Set(manager, ("config", config));
+        }
+
+        static AudioConfig BuildAudioConfig()
+        {
+            const string configPath = Root + "/Data/AudioConfig.asset";
+            AudioConfig config = AssetDatabase.LoadAssetAtPath<AudioConfig>(configPath);
+            if (config == null)
+            {
+                config = ScriptableObject.CreateInstance<AudioConfig>();
+                AssetDatabase.CreateAsset(config, configPath);
+            }
+
             (AudioCue cue, string path)[] mappings =
             {
                 (AudioCue.UiClick, "UI_Interaction/click_001.ogg"),
@@ -682,21 +732,46 @@ namespace CatDefender.EditorTools
                 (AudioCue.EnemySplit, "Combat/long-pop.wav"),
                 (AudioCue.BoxingActivate, "Economy_Upgrade/confirmation_001.ogg")
             };
+
+            var existing = new Dictionary<AudioCue, AudioCueClip>();
+            if (config.cues != null)
+                foreach (AudioCueClip entry in config.cues)
+                    if (entry != null && !existing.ContainsKey(entry.cue)) existing.Add(entry.cue, entry);
+
             AudioCueClip[] entries = new AudioCueClip[mappings.Length];
             for (int i = 0; i < mappings.Length; i++)
             {
                 string path = $"{Root}/Audio/{mappings[i].path}";
                 AudioClip clip = AssetDatabase.LoadAssetAtPath<AudioClip>(path);
                 if (clip == null) throw new FileNotFoundException("Missing audio clip: " + path);
-                entries[i] = new AudioCueClip
+                if (existing.TryGetValue(mappings[i].cue, out AudioCueClip entry))
                 {
-                    cue = mappings[i].cue,
-                    clip = clip,
-                    volume = AudioVolume(mappings[i].cue),
-                    minInterval = AudioMinInterval(mappings[i].cue)
-                };
+                    entry.clip = clip;
+                    entries[i] = entry;
+                }
+                else
+                {
+                    entries[i] = new AudioCueClip
+                    {
+                        cue = mappings[i].cue,
+                        clip = clip,
+                        volume = AudioVolume(mappings[i].cue),
+                        pitchVariation = AudioPitchVariation(mappings[i].cue),
+                        volumeVariation = AudioVolumeVariation(mappings[i].cue),
+                        minInterval = AudioMinInterval(mappings[i].cue),
+                        priority = AudioPriority(mappings[i].cue),
+                        bus = AudioBus(mappings[i].cue)
+                    };
+                }
             }
-            Set(manager, ("entries", entries));
+            config.cues = entries;
+            config.menuMusic = AssetDatabase.LoadAssetAtPath<AudioClip>($"{Root}/Audio/UI_Interaction/main_menu_music_mastered.mp3");
+            config.gameplayMusic = AssetDatabase.LoadAssetAtPath<AudioClip>($"{Root}/Audio/UI_Interaction/DST-TowerDefenseTheme.mp3");
+            if (config.menuMusic == null || config.gameplayMusic == null)
+                throw new FileNotFoundException("Both menu and gameplay music clips must be present in Assets/Game/Audio/UI_Interaction.");
+            EditorUtility.SetDirty(config);
+            AssetDatabase.SaveAssets();
+            return config;
         }
 
         static float AudioVolume(AudioCue cue)
@@ -713,28 +788,29 @@ namespace CatDefender.EditorTools
                 case AudioCue.Error:
                 case AudioCue.Confirm: return 0.30f;
                 case AudioCue.CatShoot:
-                case AudioCue.CatShootAlternate: return 0.10f;
+                case AudioCue.CatShootAlternate:
                 case AudioCue.SpecialShot:
-                case AudioCue.HeavyShot: return 0.14f;
+                case AudioCue.HeavyShot: return 0.34f;
                 case AudioCue.BulletHit:
                 case AudioCue.EnemyHit:
-                case AudioCue.ArmorHit: return 0.16f;
+                case AudioCue.ArmorHit: return 0.34f;
                 case AudioCue.Coin:
-                case AudioCue.CoinAlternate: return 0.12f;
+                case AudioCue.CoinAlternate: return 0.22f;
                 case AudioCue.CatPurchase:
                 case AudioCue.Upgrade:
                 case AudioCue.UpgradeConfirm:
                 case AudioCue.BoxingActivate: return 0.32f;
                 case AudioCue.BoxingHit:
-                case AudioCue.WallHit: return 0.20f;
+                    return 0.34f;
+                case AudioCue.WallHit: return 0.65f;
                 case AudioCue.Explosion:
-                case AudioCue.WideExplosion: return 0.28f;
+                case AudioCue.WideExplosion: return 0.40f;
                 case AudioCue.BossExplosion:
                 case AudioCue.BossAppear:
                 case AudioCue.LevelComplete:
                 case AudioCue.GameOver:
                 case AudioCue.WaveStart:
-                case AudioCue.WallCritical: return 0.34f;
+                case AudioCue.WallCritical: return 0.70f;
                 case AudioCue.Shield:
                 case AudioCue.Skill:
                 case AudioCue.Merge:
@@ -743,6 +819,65 @@ namespace CatDefender.EditorTools
                 case AudioCue.BossStun:
                 case AudioCue.EnemySplit: return 0.26f;
                 default: return 0.25f;
+            }
+        }
+
+        static float AudioPitchVariation(AudioCue cue)
+        {
+            switch (cue)
+            {
+                case AudioCue.CatShoot:
+                case AudioCue.CatShootAlternate:
+                case AudioCue.SpecialShot:
+                case AudioCue.HeavyShot:
+                case AudioCue.BulletHit:
+                case AudioCue.EnemyHit:
+                case AudioCue.ArmorHit:
+                case AudioCue.Coin:
+                case AudioCue.CoinAlternate: return 0.06f;
+                default: return 0f;
+            }
+        }
+
+        static float AudioVolumeVariation(AudioCue cue) => AudioPitchVariation(cue) > 0f ? 0.10f : 0f;
+
+        static AudioCueBus AudioBus(AudioCue cue)
+        {
+            switch (cue)
+            {
+                case AudioCue.UiClick:
+                case AudioCue.SelectCat:
+                case AudioCue.DropCat:
+                case AudioCue.Open:
+                case AudioCue.Close:
+                case AudioCue.Error:
+                case AudioCue.Confirm:
+                case AudioCue.Switch:
+                case AudioCue.UpgradeConfirm:
+                case AudioCue.PerkOffer: return AudioCueBus.UI;
+                default: return AudioCueBus.Gameplay;
+            }
+        }
+
+        static int AudioPriority(AudioCue cue)
+        {
+            switch (cue)
+            {
+                case AudioCue.CatShoot:
+                case AudioCue.CatShootAlternate:
+                case AudioCue.SpecialShot:
+                case AudioCue.HeavyShot:
+                case AudioCue.Coin:
+                case AudioCue.CoinAlternate: return 5;
+                case AudioCue.WallHit:
+                case AudioCue.WallCritical:
+                case AudioCue.BossExplosion:
+                case AudioCue.BossAppear:
+                case AudioCue.LevelComplete:
+                case AudioCue.GameOver: return 100;
+                case AudioCue.BossStun:
+                case AudioCue.WaveStart: return 80;
+                default: return 25;
             }
         }
 
@@ -938,17 +1073,6 @@ namespace CatDefender.EditorTools
                 switch (value)
                 {
                     case AudioCue cue: p.intValue = (int)cue; break;
-                    case AudioCueClip[] entries:
-                        p.arraySize = entries.Length;
-                        for (int i = 0; i < entries.Length; i++)
-                        {
-                            SerializedProperty element = p.GetArrayElementAtIndex(i);
-                            element.FindPropertyRelative("cue").intValue = (int)entries[i].cue;
-                            element.FindPropertyRelative("clip").objectReferenceValue = entries[i].clip;
-                            element.FindPropertyRelative("volume").floatValue = entries[i].volume;
-                            element.FindPropertyRelative("minInterval").floatValue = entries[i].minInterval;
-                        }
-                        break;
                     case float f: p.floatValue = f; break;
                     case string str: p.stringValue = str; break;
                     case Vector2 v: p.vector2Value = v; break;
