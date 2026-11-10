@@ -1,6 +1,6 @@
 # Lộ trình CatDefender: 6 mốc
 
-> Lập ngày 2026-11-10. Trạng thái: chưa bắt đầu mốc nào.
+> Lập ngày 2026-11-10. Trạng thái: **mốc 1 xong (chờ chủ dự án chơi thử), đang làm mốc 2.**
 
 ## Cách đọc con số
 
@@ -26,7 +26,7 @@ Bản chơi được trọn vẹn (hết mốc 4): 50 giờ AI, khoảng 2 tuầ
 
 ---
 
-## Mốc 1: Lõi chơi được (7 giờ AI, 1 giờ bạn)
+## Mốc 1: Lõi chơi được (7 giờ AI, 1 giờ bạn) — XONG, thực tế 0,7 giờ AI
 
 **Mục tiêu:** kiểm chứng vòng ghép + thủ tường có vui không trước khi đầu tư tiếp.
 
@@ -45,6 +45,14 @@ Bản chơi được trọn vẹn (hết mốc 4): 50 giờ AI, khoảng 2 tuầ
 - Ghép hai mèo cấp N cho ra đúng một mèo cấp N+1.
 - Test EditMode chạy qua.
 - Bạn chơi thử và xác nhận đi tiếp, hoặc nêu điều cần đổi.
+
+**Kết quả kiểm tra (2026-11-10):**
+- 9/9 test EditMode qua (ghép, di chuyển, đổi chỗ, ví tiền, giá mèo, sinh wave).
+- Chạy trong Play mode: mèo bắn, quái chết rơi coin, qua wave, tường hết máu thì hiện popup thua, hết 5 wave thì hiện popup thắng; console không có lỗi.
+- Ghép, di chuyển, đổi chỗ, thả ra ngoài, bỏ thùng rác: kiểm tra qua `BoardView.Press/Drag/Release`.
+- **Chưa kiểm tra được:** thao tác kéo bằng chuột/ngón tay thật (công cụ giả lập chuột không giữ được trạng thái nhấn). Cần chủ dự án kéo thử.
+- Làm vượt phạm vi: đã có dữ liệu và animation cho cả 15 mèo và 2 quái thường; mèo bỏ qua quái mà đạn đang bay đã đủ hạ.
+- Giờ thực tế đo theo đồng hồ từ commit đầu tới lúc xong, không tách theo từng đầu việc.
 
 **Việc của bạn:** chơi thử 30 phút, trả lời các câu hỏi mở 1–3 trong game-concept.
 
@@ -189,4 +197,4 @@ Bản chơi được trọn vẹn (hết mốc 4): 50 giờ AI, khoảng 2 tuầ
 
 | Ngày | Mốc | Việc đã xong | Giờ AI thực tế | Ghi chú |
 |---|---|---|---|---|
-| | | | | |
+| 2026-11-10 | 1 | Toàn bộ 1.1–1.7 | 0,7 | Ước tính 7 giờ; hệ số thực tế/ước tính ≈ 0,1. Điều khiển Editor qua Unity CLI chạy trơn. |

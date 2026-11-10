@@ -39,3 +39,6 @@ production/session-state/
 docs/consistency-failures.md
 /test-results/
 __pycache__/
+
+# Ảnh chụp kiểm thử của AI
+/Screenshots/

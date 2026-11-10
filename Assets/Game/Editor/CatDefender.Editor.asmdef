@@ -1,0 +1,6 @@
+{
+  "name": "CatDefender.Editor",
+  "rootNamespace": "CatDefender.EditorTools",
+  "references": ["CatDefender", "Unity.InputSystem", "UnityEngine.UI"],
+  "includePlatforms": ["Editor"]
+}
