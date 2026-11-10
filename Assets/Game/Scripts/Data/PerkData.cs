@@ -7,8 +7,9 @@ namespace CatDefender
     {
         public PerkType type;
         public Sprite icon;
-        public string title;
-        public string description;
+        /// <summary>Khoá trong bảng chuỗi <see cref="Loc"/>.</summary>
+        public string titleKey;
+        public string descKey;
         /// <summary>Ý nghĩa tuỳ loại: phần cộng thêm vào hệ số, máu tường, số lượt addon, hoặc cấp mèo tặng.</summary>
         public float value;
     }

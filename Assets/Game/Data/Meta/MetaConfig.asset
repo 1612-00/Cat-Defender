@@ -1,0 +1,61 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16dc7e76318579247a041e94a5d3cc3f, type: 3}
+  m_Name: MetaConfig
+  m_EditorClassIdentifier: CatDefender::CatDefender.MetaConfig
+  maxLevel: 5
+  upgrades:
+  - id: 0
+    icon: {fileID: 21300000, guid: 38bf56b766519c844ab6f5b87b7bcbcf, type: 3}
+    nameKey: up_damage_name
+    descKey: up_damage_desc
+    baseCost: 100
+    costGrowth: 1.8
+    valuePerLevel: 0.1
+  - id: 1
+    icon: {fileID: 21300000, guid: a3a42da8854b64b499367505697b813c, type: 3}
+    nameKey: up_wall_name
+    descKey: up_wall_desc
+    baseCost: 80
+    costGrowth: 1.8
+    valuePerLevel: 20
+  - id: 2
+    icon: {fileID: 21300000, guid: 4e409154515aace4f9c24bc06b2b5d77, type: 3}
+    nameKey: up_coins_name
+    descKey: up_coins_desc
+    baseCost: 80
+    costGrowth: 1.8
+    valuePerLevel: 8
+  addonNameKeys:
+  - addon_spikes
+  - addon_tnt
+  - addon_boxing
+  - addon_guardian
+  addonBaseCost: 80
+  addonCostGrowth: 1.8
+  addonBonusPerLevel: 0.2
+  packs:
+  - icon: {fileID: 21300000, guid: 6ee54d4ed01b45947a519552bd58df2f, type: 3}
+    gems: 10
+    coins: 300
+  - icon: {fileID: 21300000, guid: 9d5bf11973efaab4687ac5ac3b142adb, type: 3}
+    gems: 25
+    coins: 900
+  - icon: {fileID: 21300000, guid: 546720b96f16dc54bba42f16a2b6ab0b, type: 3}
+    gems: 50
+    coins: 2200
+  winBaseCoins: 40
+  winCoinsPerLevel: 15
+  loseFraction: 0.3
+  firstClearGems: 5
+  bossFirstClearGems: 15
+  startGems: 10

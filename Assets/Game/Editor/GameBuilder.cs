@@ -17,10 +17,11 @@ namespace CatDefender.EditorTools
     /// Chạy lại được nhiều lần: asset đã có thì ghi đè nội dung, giữ nguyên GUID.
     /// Mọi chỉ số bản nháp của mèo, quái, addon và 30 level nằm ở đây; sửa rồi chạy lại Build.
     /// </summary>
-    public static class GameBuilder
+    public static partial class GameBuilder
     {
         public const string Kit = "Assets/cat-defense-kit/Png";
         public const string Root = "Assets/Game";
+        public const string MetaPath = Root + "/Data/Meta/MetaConfig.asset";
         public const int CatCount = 15, RegCount = 8, BossCount = 7, LevelCount = 30;
 
         // Toạ độ đo từ Area1.png (2143x1062, 100 px/unit, tâm ở gốc toạ độ).
@@ -79,7 +80,7 @@ namespace CatDefender.EditorTools
         [MenuItem("CatDefender/2. Build Game")]
         public static void Build()
         {
-            foreach (string dir in new[] { "Art", "Data", "Data/Cats", "Data/Enemies", "Data/Levels", "Data/Addons", "Data/Perks", "Prefabs", "Scenes" })
+            foreach (string dir in new[] { "Art", "Data", "Data/Cats", "Data/Enemies", "Data/Levels", "Data/Addons", "Data/Perks", "Data/Meta", "Prefabs", "Scenes" })
                 Directory.CreateDirectory($"{Root}/{dir}");
             AssetDatabase.Refresh();
 
@@ -97,6 +98,7 @@ namespace CatDefender.EditorTools
             EnemyData[] bosses = Enumerable.Range(0, BossCount).Select(i => BuildBoss(i, regs)).ToArray();
             AddonData[] addons = BuildAddons();
             PerkData[] perks = BuildPerks();
+            MetaConfig meta = BuildMeta();
             LevelData[] levels = Enumerable.Range(1, LevelCount).Select(n => BuildLevel(n, regs, bosses)).ToArray();
 
             BuildPrefab<Cat>("Cat", unlit, 10, typeof(SpriteAnimator));
@@ -154,7 +156,7 @@ namespace CatDefender.EditorTools
                 return w;
             }).ToArray();
             Set(runner, ("game", game), ("fxPrefab", fxPrefab));
-            Set(game, ("levels", levels), ("addons", addons), ("perkPool", perks), ("board", board), ("wall", wall),
+            Set(game, ("levels", levels), ("addons", addons), ("perkPool", perks), ("meta", meta), ("board", board), ("wall", wall),
                 ("laneYs", SlotRows), ("laneWarnings", warnings),
                 ("addonRunner", runner), ("background", background),
                 ("enemyPrefab", enemyPrefab), ("bulletPrefab", bulletPrefab), ("fxPrefab", fxPrefab),
@@ -164,7 +166,15 @@ namespace CatDefender.EditorTools
 
             string scenePath = $"{Root}/Scenes/Gameplay.unity";
             EditorSceneManager.SaveScene(scene, scenePath);
-            EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(scenePath, true) };
+
+            // Scene Menu dựng sau cùng và là scene mở đầu game. Mở scene mới làm mọi asset ở trên thành null,
+            // nên BuildMenuScene tự tải lại những gì nó cần.
+            string menuPath = BuildMenuScene();
+            EditorBuildSettings.scenes = new[]
+            {
+                new EditorBuildSettingsScene(menuPath, true),
+                new EditorBuildSettingsScene(scenePath, true),
+            };
 
             PlayerSettings.productName = "Cats Defender";
             PlayerSettings.defaultInterfaceOrientation = UIOrientation.AutoRotation;
@@ -277,26 +287,59 @@ namespace CatDefender.EditorTools
 
         static PerkData[] BuildPerks() => new[]
         {
-            BuildPerk("FireRate", PerkType.FireRate, "AddonIcon1", "Rapid Fire", "Cats shoot 20% faster", 0.2f),
-            BuildPerk("Damage", PerkType.Damage, "Up3", "Sharp Claws", "+25% bullet damage", 0.25f),
-            BuildPerk("Splash", PerkType.Splash, "AddonIcon3", "Blast Rounds", "Bullets splash 30% damage nearby", 0.3f),
-            BuildPerk("Coins", PerkType.Coins, "AddonIcon2", "Lucky Coins", "+30% coins from kills", 0.3f),
-            BuildPerk("Slow", PerkType.Slow, "AddonIcon4", "Sticky Shots", "Bullets slow enemies by 20%", 0.2f),
-            BuildPerk("Wall", PerkType.Wall, "WallIcon", "Thick Wall", "+40 max wall HP", 40f),
-            BuildPerk("AddonRefill", PerkType.AddonRefill, "Icon_Addon", "Restock", "+1 use of every addon", 1f),
-            BuildPerk("FreeCat", PerkType.FreeCat, "Icon_Cat", "Stray Cat", "A free level 2 cat joins", 2f),
+            BuildPerk("FireRate", PerkType.FireRate, "AddonIcon1", 0.2f),
+            BuildPerk("Damage", PerkType.Damage, "Up3", 0.25f),
+            BuildPerk("Splash", PerkType.Splash, "AddonIcon3", 0.3f),
+            BuildPerk("Coins", PerkType.Coins, "AddonIcon2", 0.3f),
+            BuildPerk("Slow", PerkType.Slow, "AddonIcon4", 0.2f),
+            BuildPerk("Wall", PerkType.Wall, "WallIcon", 40f),
+            BuildPerk("AddonRefill", PerkType.AddonRefill, "Icon_Addon", 1f),
+            BuildPerk("FreeCat", PerkType.FreeCat, "Icon_Cat", 2f),
         };
 
-        static PerkData BuildPerk(string name, PerkType type, string icon, string title, string description, float value)
+        /// <summary>Chữ của thẻ nằm trong Loc với khoá perk_{tên thường}_title và perk_{tên thường}_desc.</summary>
+        static PerkData BuildPerk(string name, PerkType type, string icon, float value)
         {
             PerkData p = Asset($"{Root}/Data/Perks/{name}.asset", ScriptableObject.CreateInstance<PerkData>);
             p.type = type;
             p.icon = Ui(icon);
-            p.title = title;
-            p.description = description;
+            p.titleKey = $"perk_{name.ToLowerInvariant()}_title";
+            p.descKey = $"perk_{name.ToLowerInvariant()}_desc";
             p.value = value;
             EditorUtility.SetDirty(p);
             return p;
+        }
+
+        /// <summary>Chỉ số bản nháp của phần ngoài màn chơi: nâng cấp vĩnh viễn, thưởng, gói coin.</summary>
+        static MetaConfig BuildMeta()
+        {
+            MetaConfig m = Asset(MetaPath, ScriptableObject.CreateInstance<MetaConfig>);
+            m.maxLevel = 5;
+            m.upgrades = new[]
+            {
+                new MetaConfig.UpgradeDef { id = UpgradeId.CatDamage, icon = Ui("Up3"), nameKey = "up_damage_name", descKey = "up_damage_desc", baseCost = 100, costGrowth = 1.8f, valuePerLevel = 0.1f },
+                new MetaConfig.UpgradeDef { id = UpgradeId.WallHp, icon = Ui("WallIcon"), nameKey = "up_wall_name", descKey = "up_wall_desc", baseCost = 80, costGrowth = 1.8f, valuePerLevel = 20f },
+                new MetaConfig.UpgradeDef { id = UpgradeId.StartCoins, icon = Ui("CoinIcon"), nameKey = "up_coins_name", descKey = "up_coins_desc", baseCost = 80, costGrowth = 1.8f, valuePerLevel = 8f },
+            };
+            // Cùng thứ tự với BuildAddons.
+            m.addonNameKeys = new[] { "addon_spikes", "addon_tnt", "addon_boxing", "addon_guardian" };
+            m.addonBaseCost = 80;
+            m.addonCostGrowth = 1.8f;
+            m.addonBonusPerLevel = 0.2f;
+            m.packs = new[]
+            {
+                new MetaConfig.CoinPack { icon = Ui("ShopIcon2"), gems = 10, coins = 300 },
+                new MetaConfig.CoinPack { icon = Ui("ShopIcon3"), gems = 25, coins = 900 },
+                new MetaConfig.CoinPack { icon = Ui("ShopIcon1"), gems = 50, coins = 2200 },
+            };
+            m.winBaseCoins = 40;
+            m.winCoinsPerLevel = 15;
+            m.loseFraction = 0.3f;
+            m.firstClearGems = 5;
+            m.bossFirstClearGems = 15;
+            m.startGems = 10;
+            EditorUtility.SetDirty(m);
+            return m;
         }
 
         static AddonData BuildAddon(string name, AddonType type, int icon, int uses, float duration, int damage,
@@ -409,76 +452,66 @@ namespace CatDefender.EditorTools
 
         static void BuildHud(GameManager game, BoardView board, AddonData[] addons)
         {
-            var canvasGo = new GameObject("Canvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
-            canvasGo.GetComponent<Canvas>().renderMode = RenderMode.ScreenSpaceOverlay;
-            var scaler = canvasGo.GetComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(2143, 1062);
-            scaler.matchWidthOrHeight = 1;
-            new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
-            Transform root = canvasGo.transform;
-            Vector2 topLeft = new Vector2(0, 1), topRight = new Vector2(1, 1), top = new Vector2(0.5f, 1),
-                bottomLeft = Vector2.zero, bottomRight = new Vector2(1, 0), center = new Vector2(0.5f, 0.5f);
+            Transform canvas = MakeCanvas();
+            Transform root = SafeRoot(canvas);
 
-            Image coinBar = Img("CoinBar", root, "CoinBar", topLeft, new Vector2(140, -70));
+            Image coinBar = Img("CoinBar", root, "CoinBar", TopLeft, new Vector2(140, -70));
             Text coinText = Label("Coins", coinBar.transform, "0", 40, new Vector2(20, 0));
             Img("CoinIcon", coinBar.transform, "CoinIcon", new Vector2(0, 0.5f), new Vector2(-20, 0))
-                .rectTransform.pivot = center;
+                .rectTransform.pivot = Center;
 
-            Image waveBar = Img("WaveBar", root, "WaveBar", topRight, new Vector2(-260, -70));
-            Text waveText = Label("Wave", waveBar.transform, "", 30, new Vector2(18, 0));
+            Button pause = Img("PauseButton", root, "SettingBtn", TopRight, new Vector2(-50, -50)).gameObject.AddComponent<Button>();
+            Image waveBar = Img("WaveBar", root, "WaveBar", TopRight, new Vector2(-190, -62));
+            Text waveText = Label("Wave", waveBar.transform, "", 30, new Vector2(18, 0), "");
 
-            // Chọn level tạm thời để chơi thử; mốc 3 thay bằng bản đồ level.
-            Image levelBox = Img("LevelBox", root, "AddonBoxNumber", top, new Vector2(0, -70));
+            Image levelBox = Img("LevelBox", root, "AddonBoxNumber", Top, new Vector2(0, -70));
             levelBox.rectTransform.localScale = Vector3.one * 1.4f;
-            Text levelText = Label("Level", levelBox.transform, "", 30, Vector2.zero);
-            Button prev = SmallButton("PrevLevel", root, top, new Vector2(-170, -72), "<");
-            Button skip = SmallButton("SkipLevel", root, top, new Vector2(170, -72), ">");
+            Text levelText = Label("Level", levelBox.transform, "", 30, Vector2.zero, "");
 
             // Thùng rác: kéo mèo thả vào đây để bỏ. Đặt bên trái nút mua.
-            var trash = new GameObject("Trash", typeof(Image)).GetComponent<Image>();
-            trash.transform.SetParent(root, false);
-            trash.sprite = EnsureSprite($"{Root}/Art/Trash.png", 256);
-            trash.raycastTarget = false;
-            trash.rectTransform.sizeDelta = new Vector2(120, 120);
-            trash.rectTransform.anchorMin = trash.rectTransform.anchorMax = bottomLeft;
-            trash.rectTransform.pivot = center;
-            trash.rectTransform.anchoredPosition = new Vector2(110, 111);
+            Image trash = Icon("Trash", root, EnsureSprite($"{Root}/Art/Trash.png", 256), 120, BottomLeft, new Vector2(110, 111));
             Set(board, ("trashIcon", trash.rectTransform));
 
-            Button buy = Btn("BuyButton", root, "BtnGreen", bottomLeft, new Vector2(200, 50),
-                Strings.BuyCat, out Text buyCost);
-            Button repair = Btn("RepairButton", root, "BtnOrange", bottomLeft, new Vector2(570, 50),
-                Strings.RepairWall, out Text repairCost);
+            Button buy = Btn("BuyButton", root, "BtnGreen", BottomLeft, new Vector2(200, 50), "buy_cat", out Text buyCost);
+            Button repair = Btn("RepairButton", root, "BtnOrange", BottomLeft, new Vector2(570, 50), "repair", out Text repairCost);
 
             var addonButtons = new Button[addons.Length];
             var addonCounts = new Text[addons.Length];
             for (int i = 0; i < addons.Length; i++)
             {
-                Image box = Img("Addon" + addons[i].name, root, "YellowBox", bottomRight,
+                Image box = Img("Addon" + addons[i].name, root, "YellowBox", BottomRight,
                     new Vector2(-90 - (addons.Length - 1 - i) * 175, 40));
                 addonButtons[i] = box.gameObject.AddComponent<Button>();
-                var icon = new GameObject("Icon", typeof(Image)).GetComponent<Image>();
-                icon.transform.SetParent(box.transform, false);
-                icon.sprite = addons[i].icon;
-                icon.raycastTarget = false;
-                icon.preserveAspect = true;
-                icon.rectTransform.sizeDelta = new Vector2(110, 110);
-                icon.rectTransform.anchoredPosition = new Vector2(0, 8);
+                Icon("Icon", box.transform, addons[i].icon, 110, Center, new Vector2(0, 8));
                 addonCounts[i] = Label("Count", box.transform, "", 30, new Vector2(40, -50));
             }
 
-            GameObject win = ResultPanel("WinPanel", root, "WinPopUp", out Transform winRoot);
-            Button next = TextButton("NextLevelButton", winRoot, "BtnGreen", new Vector2(-190, -300), Strings.NextLevel);
-            Button winRestart = TextButton("RestartButton", winRoot, "BtnOrange", new Vector2(190, -300), Strings.PlayAgain);
-            GameObject lose = ResultPanel("LosePanel", root, "LosePopUp", out Transform loseRoot);
-            Button loseRestart = TextButton("RestartButton", loseRoot, "BtnGreen", new Vector2(0, -300), Strings.PlayAgain);
+            // Các bảng phủ kín màn hình nằm ngoài vùng an toàn để lớp tối che hết.
+            GameObject win = ResultPanel("WinPanel", canvas, "WinPopUp", out Transform winRoot);
+            Text winCoins = RewardRow("RewardCoins", winRoot, Ui("CoinIcon"), new Vector2(0, -10)).GetComponentInChildren<Text>();
+            GameObject gemRow = RewardRow("RewardGems", winRoot, Ui("GemsIcon"), new Vector2(0, -90));
+            Button next = TextButton("NextLevelButton", winRoot, "BtnGreen", new Vector2(-190, -300), "next_level");
+            Button winMenu = TextButton("MenuButton", winRoot, "BtnOrange", new Vector2(190, -300), "menu");
+
+            GameObject lose = ResultPanel("LosePanel", canvas, "LosePopUp", out Transform loseRoot);
+            Text loseCoins = RewardRow("RewardCoins", loseRoot, Ui("CoinIcon"), new Vector2(0, -170)).GetComponentInChildren<Text>();
+            Button loseRetry = TextButton("RetryButton", loseRoot, "BtnGreen", new Vector2(-190, -300), "retry");
+            Button loseMenu = TextButton("MenuButton", loseRoot, "BtnOrange", new Vector2(190, -300), "menu");
+
+            GameObject pausePanel = ResultPanel("PausePanel", canvas, "BgPaused", out Transform pauseRoot);
+            RectTransform pauseTitle = (RectTransform)pauseRoot.Find("Popup");
+            pauseTitle.anchoredPosition = new Vector2(0, 300);
+            Label("Title", pauseTitle, "", 60, Vector2.zero, "paused");
+            BuildSettings(pauseRoot, new Vector2(0, 60));
+            Button resume = TextButton("ResumeButton", pauseRoot, "BtnGreen", new Vector2(-380, -300), "resume");
+            Button pauseRetry = TextButton("RetryButton", pauseRoot, "BtnOrange", new Vector2(0, -300), "retry");
+            Button pauseMenu = TextButton("MenuButton", pauseRoot, "BtnOrange", new Vector2(380, -300), "menu");
 
             // Bảng chọn 1 trong 3 thẻ nâng cấp sau mỗi wave.
-            GameObject perkPanel = ResultPanel("PerkPanel", root, "TitleRibbon", out Transform perkRoot);
+            GameObject perkPanel = ResultPanel("PerkPanel", canvas, "TitleRibbon", out Transform perkRoot);
             RectTransform ribbon = (RectTransform)perkRoot.Find("Popup");
             ribbon.anchoredPosition = new Vector2(0, 380);
-            Label("Title", ribbon, Strings.ChoosePerk, 44, new Vector2(0, 14));
+            Label("Title", ribbon, "", 44, new Vector2(0, 14), "choose_perk");
             const int cardCount = 3;
             var perkButtons = new Button[cardCount];
             var perkIcons = new Image[cardCount];
@@ -486,31 +519,30 @@ namespace CatDefender.EditorTools
             var perkDescriptions = new Text[cardCount];
             for (int i = 0; i < cardCount; i++)
             {
-                Image card = Img("Card" + i, perkRoot, i == 1 ? "OrangeShopBox" : "BlueShopBox", center,
+                Image card = Img("Card" + i, perkRoot, i == 1 ? "OrangeShopBox" : "BlueShopBox", Center,
                     new Vector2((i - 1) * 400, -40));
                 card.rectTransform.localScale = Vector3.one * 1.5f;
                 perkButtons[i] = card.gameObject.AddComponent<Button>();
-                perkTitles[i] = Label("Title", card.transform, "", 26, new Vector2(0, 148));
-                perkIcons[i] = new GameObject("Icon", typeof(Image)).GetComponent<Image>();
-                perkIcons[i].transform.SetParent(card.transform, false);
-                perkIcons[i].raycastTarget = false;
-                perkIcons[i].preserveAspect = true;
-                perkIcons[i].rectTransform.sizeDelta = new Vector2(110, 110);
-                perkIcons[i].rectTransform.anchoredPosition = new Vector2(0, 40);
-                Text d = Label("Description", card.transform, "", 22, Vector2.zero);
+                perkTitles[i] = Label("Title", card.transform, "", 26, new Vector2(0, 148), "");
+                perkIcons[i] = Icon("Icon", card.transform, null, 110, Center, new Vector2(0, 40));
+                Text d = Label("Description", card.transform, "", 22, Vector2.zero, "");
                 d.horizontalOverflow = HorizontalWrapMode.Wrap;
                 d.rectTransform.offsetMin = new Vector2(16, 20);
                 d.rectTransform.offsetMax = new Vector2(-16, -220);
                 perkDescriptions[i] = d;
             }
 
-            var hud = canvasGo.AddComponent<Hud>();
+            var hud = canvas.gameObject.AddComponent<Hud>();
             Set(hud, ("game", game), ("coinText", coinText), ("waveText", waveText), ("levelText", levelText),
                 ("buyCostText", buyCost), ("repairCostText", repairCost),
-                ("buyButton", buy), ("repairButton", repair), ("prevLevelButton", prev), ("skipLevelButton", skip),
+                ("buyButton", buy), ("repairButton", repair),
                 ("addonButtons", addonButtons), ("addonCountTexts", addonCounts),
                 ("winPanel", win), ("losePanel", lose), ("nextLevelButton", next),
-                ("restartButtons", new[] { winRestart, loseRestart }),
+                ("restartButtons", new[] { loseRetry, pauseRetry }),
+                ("menuButtons", new[] { winMenu, loseMenu, pauseMenu }),
+                ("rewardCoinTexts", new[] { winCoins, loseCoins }),
+                ("rewardGemText", gemRow.GetComponentInChildren<Text>()), ("rewardGemRow", gemRow),
+                ("pauseButton", pause), ("resumeButton", resume), ("pausePanel", pausePanel),
                 ("perkPanel", perkPanel), ("perkButtons", perkButtons), ("perkIcons", perkIcons),
                 ("perkTitles", perkTitles), ("perkDescriptions", perkDescriptions));
         }
@@ -530,8 +562,12 @@ namespace CatDefender.EditorTools
             return img;
         }
 
-        /// <summary>Chữ phủ kín phần tử cha, căn giữa, có viền tối.</summary>
-        static Text Label(string name, Transform parent, string text, int size, Vector2 offset)
+        /// <summary>
+        /// Chữ phủ kín phần tử cha, căn giữa, có viền tối.
+        /// <paramref name="key"/>: null = chữ không dịch (con số); "" = chữ do code gán nhưng cần đổi font theo ngôn ngữ;
+        /// khác rỗng = khoá trong Loc, tự điền chữ.
+        /// </summary>
+        static Text Label(string name, Transform parent, string text, int size, Vector2 offset, string key = null)
         {
             var t = new GameObject(name, typeof(Text), typeof(Outline)).GetComponent<Text>();
             t.transform.SetParent(parent, false);
@@ -546,53 +582,129 @@ namespace CatDefender.EditorTools
             var o = t.GetComponent<Outline>();
             o.effectColor = new Color(0.2f, 0.1f, 0.05f, 0.9f);
             o.effectDistance = new Vector2(2, -2);
-            RectTransform rt = t.rectTransform;
+            Stretch(t.rectTransform);
+            t.rectTransform.anchoredPosition = offset;
+            if (key != null) Set(t.gameObject.AddComponent<LocText>(), ("key", key));
+            return t;
+        }
+
+        static void Stretch(RectTransform rt)
+        {
             rt.anchorMin = Vector2.zero;
             rt.anchorMax = Vector2.one;
             rt.offsetMin = rt.offsetMax = Vector2.zero;
-            rt.anchoredPosition = offset;
-            return t;
+        }
+
+        /// <summary>Ảnh vuông kích thước cho trước, giữ tỉ lệ, không chặn chạm.</summary>
+        static Image Icon(string name, Transform parent, Sprite sprite, float size, Vector2 corner, Vector2 pos)
+        {
+            var img = new GameObject(name, typeof(Image)).GetComponent<Image>();
+            img.transform.SetParent(parent, false);
+            img.sprite = sprite;
+            img.raycastTarget = false;
+            img.preserveAspect = true;
+            RectTransform rt = img.rectTransform;
+            rt.sizeDelta = new Vector2(size, size);
+            rt.anchorMin = rt.anchorMax = corner;
+            rt.pivot = Center;
+            rt.anchoredPosition = pos;
+            return img;
         }
 
         /// <summary>Nút có tiêu đề ở trên và giá ở dưới.</summary>
         static Button Btn(string name, Transform parent, string sprite, Vector2 corner, Vector2 pos,
-            string title, out Text cost)
+            string titleKey, out Text cost)
         {
             Image img = Img(name, parent, sprite, corner, pos);
-            Label("Title", img.transform, title, 38, new Vector2(0, 22));
+            Label("Title", img.transform, "", 38, new Vector2(0, 22), titleKey);
             cost = Label("Cost", img.transform, "", 36, new Vector2(0, -24));
             return img.gameObject.AddComponent<Button>();
         }
 
-        static Button TextButton(string name, Transform parent, string sprite, Vector2 pos, string title)
+        static Button TextButton(string name, Transform parent, string sprite, Vector2 pos, string key, int size = 44)
         {
-            Image img = Img(name, parent, sprite, new Vector2(0.5f, 0.5f), pos);
-            Label("Title", img.transform, title, 44, Vector2.zero);
+            Image img = Img(name, parent, sprite, Center, pos);
+            Label("Title", img.transform, "", size, Vector2.zero, key);
             return img.gameObject.AddComponent<Button>();
         }
 
-        static Button SmallButton(string name, Transform parent, Vector2 corner, Vector2 pos, string title)
-        {
-            Image img = Img(name, parent, "YellowBox", corner, pos);
-            img.rectTransform.localScale = Vector3.one * 0.5f;
-            Label("Title", img.transform, title, 80, Vector2.zero);
-            return img.gameObject.AddComponent<Button>();
-        }
-
-        /// <summary>Lớp phủ tối toàn màn hình kèm ảnh popup; <paramref name="content"/> là nơi gắn nút.</summary>
+        /// <summary>Lớp phủ tối toàn màn hình kèm một ảnh ở giữa (tên "Popup"); <paramref name="content"/> là nơi gắn nút.</summary>
         static GameObject ResultPanel(string name, Transform parent, string popup, out Transform content)
         {
             var dim = new GameObject(name, typeof(Image)).GetComponent<Image>();
             dim.transform.SetParent(parent, false);
             dim.color = new Color(0, 0, 0, 0.6f);
-            RectTransform rt = dim.rectTransform;
-            rt.anchorMin = Vector2.zero;
-            rt.anchorMax = Vector2.one;
-            rt.offsetMin = rt.offsetMax = Vector2.zero;
-            Img("Popup", dim.transform, popup, new Vector2(0.5f, 0.5f), new Vector2(0, 80));
+            Stretch(dim.rectTransform);
+            Img("Popup", dim.transform, popup, Center, new Vector2(0, 80));
             content = dim.transform;
             dim.gameObject.SetActive(false);
             return dim.gameObject;
+        }
+
+        /// <summary>Dòng "icon +số" hiển thị phần thưởng; trả về GameObject chứa cả dòng.</summary>
+        static GameObject RewardRow(string name, Transform parent, Sprite icon, Vector2 pos)
+        {
+            var row = new GameObject(name, typeof(RectTransform));
+            row.transform.SetParent(parent, false);
+            var rt = (RectTransform)row.transform;
+            rt.sizeDelta = new Vector2(300, 70);
+            rt.anchoredPosition = pos;
+            Icon("Icon", row.transform, icon, 64, Center, new Vector2(-70, 0));
+            Label("Amount", row.transform, "+0", 52, new Vector2(30, 0));
+            return row;
+        }
+
+        /// <summary>Ba nút tròn nhạc/âm thanh/rung và nút đổi ngôn ngữ.</summary>
+        static SettingsPanel BuildSettings(Transform parent, Vector2 pos)
+        {
+            var go = new GameObject("Settings", typeof(RectTransform));
+            go.transform.SetParent(parent, false);
+            ((RectTransform)go.transform).anchoredPosition = pos;
+
+            Button Round(string name, string sprite, float x)
+            {
+                Image img = Img(name, go.transform, sprite, Center, new Vector2(x, 60));
+                img.rectTransform.localScale = Vector3.one * 0.75f;
+                return img.gameObject.AddComponent<Button>();
+            }
+
+            Button music = Round("Music", "BtnMusic", -220);
+            Button sound = Round("Sound", "BtnSound", 0);
+            Button vibration = Round("Vibration", "BtnVibra", 220);
+            Button language = TextButton("Language", go.transform, "BtnGreen", new Vector2(0, -120), "language", 30);
+            language.GetComponent<RectTransform>().sizeDelta = new Vector2(520, 110);
+
+            var panel = go.AddComponent<SettingsPanel>();
+            Set(panel, ("music", music), ("sound", sound), ("vibration", vibration), ("language", language),
+                ("musicOn", Ui("BtnMusic")), ("musicOff", Ui("BtnMusicOff")),
+                ("soundOn", Ui("BtnSound")), ("soundOff", Ui("BtnSound Off")),
+                ("vibrationOn", Ui("BtnVibra")), ("vibrationOff", Ui("BtnVibra Off")));
+            return panel;
+        }
+
+        static readonly Vector2 TopLeft = new Vector2(0, 1), TopRight = new Vector2(1, 1), Top = new Vector2(0.5f, 1),
+            BottomLeft = Vector2.zero, BottomRight = new Vector2(1, 0), Center = new Vector2(0.5f, 0.5f);
+
+        /// <summary>Canvas phủ màn hình, co giãn theo chiều cao 1062, kèm EventSystem dùng Input System.</summary>
+        static Transform MakeCanvas()
+        {
+            var canvasGo = new GameObject("Canvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
+            canvasGo.GetComponent<Canvas>().renderMode = RenderMode.ScreenSpaceOverlay;
+            var scaler = canvasGo.GetComponent<CanvasScaler>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(2143, 1062);
+            scaler.matchWidthOrHeight = 1;
+            new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
+            return canvasGo.transform;
+        }
+
+        /// <summary>Vùng an toàn (tránh tai thỏ); mọi UI neo vào mép màn hình đặt trong này.</summary>
+        static Transform SafeRoot(Transform canvas)
+        {
+            var go = new GameObject("Safe", typeof(RectTransform), typeof(SafeArea));
+            go.transform.SetParent(canvas, false);
+            Stretch((RectTransform)go.transform);
+            return go.transform;
         }
 
         // ---------- Trợ giúp ----------
@@ -685,6 +797,7 @@ namespace CatDefender.EditorTools
                 switch (value)
                 {
                     case float f: p.floatValue = f; break;
+                    case string str: p.stringValue = str; break;
                     case Vector2 v: p.vector2Value = v; break;
                     case int[] ints:
                         p.arraySize = ints.Length;

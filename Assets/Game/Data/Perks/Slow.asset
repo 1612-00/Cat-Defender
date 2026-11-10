@@ -14,6 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: CatDefender::CatDefender.PerkData
   type: 4
   icon: {fileID: 21300000, guid: c4ee3d3333f93f44ab837323a640d29c, type: 3}
-  title: Sticky Shots
-  description: Bullets slow enemies by 20%
+  titleKey: perk_slow_title
+  descKey: perk_slow_desc
   value: 0.2

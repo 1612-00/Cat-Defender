@@ -14,6 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: CatDefender::CatDefender.PerkData
   type: 5
   icon: {fileID: 21300000, guid: a3a42da8854b64b499367505697b813c, type: 3}
-  title: Thick Wall
-  description: +40 max wall HP
+  titleKey: perk_wall_title
+  descKey: perk_wall_desc
   value: 40

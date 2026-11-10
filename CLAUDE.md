@@ -47,6 +47,13 @@ Giao tiếp với người dùng bằng **tiếng Việt**.
 - Font: Passion One (Google Fonts), chưa được thêm vào project.
 - **Không có âm thanh hay nhạc.**
 
+## Cấu trúc game
+
+- Hai scene: `Menu` (mở đầu: màn chào, bản đồ level, nâng cấp, addon, shop, cài đặt) và `Gameplay`. Chuyển scene bằng tên.
+- Tiến trình người chơi: `Profile` (tĩnh) giữ một `SaveData`, lưu JSON trong PlayerPrefs. Phải gọi `Profile.Init(meta)` trước khi dùng. Chỉ số ngoài màn chơi nằm trong `MetaConfig`.
+- Chữ hiển thị: mọi chuỗi nằm trong `Loc.cs` (Anh/Việt). Text có dịch phải gắn `LocText`; trong `GameBuilder` truyền khoá cho `Label(...)`.
+- Xoá hoặc sửa tiến trình khi thử: menu `CatDefender > Debug` (Reset Save, Unlock All Levels, Add 1000 Coins And 50 Gems).
+
 ## Cách dựng và kiểm tra
 
 - **Scene, prefab và dữ liệu đều do code sinh ra**, không chỉnh tay: sửa `Assets/Game/Editor/GameBuilder.cs` rồi chạy menu `CatDefender > 2. Build Game` (hoặc `GameBuilder.Build()`). Chỉnh tay trong scene hay asset dữ liệu sẽ bị ghi đè ở lần dựng sau.

@@ -13,6 +13,7 @@ namespace CatDefender
         [SerializeField] LevelData[] levels;
         [SerializeField] AddonData[] addons;
         [SerializeField] PerkData[] perkPool;
+        [SerializeField] MetaConfig meta;
         [SerializeField] BoardView board;
         [SerializeField] Wall wall;
         [SerializeField] AddonRunner addonRunner;
@@ -58,7 +59,13 @@ namespace CatDefender
 
         /// <summary>Các thẻ đang chờ người chơi chọn; null khi không có. Game tạm dừng trong lúc chọn.</summary>
         public PerkData[] PerkChoices { get; private set; }
-        public bool Paused => PerkChoices != null;
+        /// <summary>Người chơi bấm tạm dừng.</summary>
+        public bool UserPaused { get; private set; }
+        public bool Paused => PerkChoices != null || UserPaused;
+
+        /// <summary>Coin và gem nhận được khi level kết thúc; chỉ có nghĩa sau khi thắng hoặc thua.</summary>
+        public int RewardCoins { get; private set; }
+        public int RewardGems { get; private set; }
 
         public int LevelNumber => Session.LevelIndex + 1;
         public int LevelCount => levels.Length;
@@ -88,9 +95,13 @@ namespace CatDefender
             level = levels[Session.LevelIndex];
             if (level.background != null) background.sprite = level.background;
 
-            Wallet = new Wallet(level.startCoins);
+            // Nâng cấp vĩnh viễn từ menu cộng vào chỉ số khởi đầu của level.
+            Profile.Init(meta);
+            SaveData save = Profile.Data;
+            Wallet = new Wallet(level.startCoins + Mathf.RoundToInt(meta.UpgradeValue(UpgradeId.StartCoins, save)));
             Perks = new Perks();
-            wall.Init(level.wallHp);
+            Perks.Apply(PerkType.Damage, meta.UpgradeValue(UpgradeId.CatDamage, save));
+            wall.Init(level.wallHp + Mathf.RoundToInt(meta.UpgradeValue(UpgradeId.WallHp, save)));
             waves = new WaveRunner(BuildWaves(), level.waveDelay, level.firstWaveDelay);
             addonUsesLeft = new int[addons.Length];
             for (int i = 0; i < addons.Length; i++) addonUsesLeft[i] = addons[i].uses;
@@ -271,7 +282,7 @@ namespace CatDefender
         {
             if (!CanUseAddon(i)) return;
             addonUsesLeft[i]--;
-            addonRunner.Run(addons[i]);
+            addonRunner.Run(addons[i], meta.AddonScale(Profile.Data.addonLevels[i]));
             Changed?.Invoke();
         }
 
@@ -287,7 +298,7 @@ namespace CatDefender
             List<int> picks = Picker.Distinct(pool.Count, Mathf.Min(perkChoiceCount, pool.Count), rng);
             PerkChoices = new PerkData[picks.Count];
             for (int i = 0; i < picks.Count; i++) PerkChoices[i] = pool[picks[i]];
-            Time.timeScale = 0f;
+            UpdateTimeScale();
             Changed?.Invoke();
         }
 
@@ -296,7 +307,7 @@ namespace CatDefender
             if (PerkChoices == null || index < 0 || index >= PerkChoices.Length) return;
             PerkData perk = PerkChoices[index];
             PerkChoices = null;
-            Time.timeScale = 1f;
+            UpdateTimeScale();
 
             switch (perk.type)
             {
@@ -318,21 +329,67 @@ namespace CatDefender
 
         // ---------- Level ----------
 
+        public void SetPaused(bool paused)
+        {
+            if (State != GameState.Playing) return;
+            UserPaused = paused;
+            UpdateTimeScale();
+            Changed?.Invoke();
+        }
+
+        void UpdateTimeScale() => Time.timeScale = Paused ? 0f : 1f;
+
         public void Restart() => LoadLevel(Session.LevelIndex);
 
         public void LoadLevel(int index)
         {
             Session.LevelIndex = Mathf.Clamp(index, 0, levels.Length - 1);
             Time.timeScale = 1f;
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+            SceneManager.LoadScene("Gameplay");
+        }
+
+        public void GoToMenu()
+        {
+            Time.timeScale = 1f;
+            SceneManager.LoadScene("Menu");
         }
 
         void End(GameState result)
         {
             if (State != GameState.Playing) return;
             State = result;
+            UserPaused = false;
+            Time.timeScale = 1f;
             ShowLaneWarnings(false);
+            GrantRewards(result == GameState.Won);
             Changed?.Invoke();
+        }
+
+        /// <summary>Cộng thưởng vào tiến trình và lưu. Thắng lần đầu mở level kế tiếp và tặng gem.</summary>
+        void GrantRewards(bool won)
+        {
+            SaveData save = Profile.Data;
+            int winCoins = MetaRules.WinCoins(meta.winBaseCoins, meta.winCoinsPerLevel, LevelNumber);
+            RewardCoins = won ? winCoins : MetaRules.LoseCoins(winCoins, meta.loseFraction, waves.CurrentWave - 1, waves.WaveCount);
+            RewardGems = 0;
+
+            if (won && Session.LevelIndex == save.unlockedLevel)
+            {
+                save.unlockedLevel = Session.LevelIndex + 1;
+                RewardGems = HasBoss(level) ? meta.bossFirstClearGems : meta.firstClearGems;
+            }
+
+            save.coins += RewardCoins;
+            save.gems += RewardGems;
+            Profile.Save();
+        }
+
+        static bool HasBoss(LevelData data)
+        {
+            foreach (LevelData.Wave wave in data.waves)
+                foreach (LevelData.Group g in wave.groups)
+                    if (g.enemy.isBoss) return true;
+            return false;
         }
     }
 }

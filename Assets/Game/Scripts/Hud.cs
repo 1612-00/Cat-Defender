@@ -13,14 +13,26 @@ namespace CatDefender
         [SerializeField] Text repairCostText;
         [SerializeField] Button buyButton;
         [SerializeField] Button repairButton;
-        [SerializeField] Button prevLevelButton;
-        [SerializeField] Button skipLevelButton;
         [SerializeField] Button[] addonButtons;
         [SerializeField] Text[] addonCountTexts;
+
+        [Header("Kết thúc level")]
         [SerializeField] GameObject winPanel;
         [SerializeField] GameObject losePanel;
         [SerializeField] Button nextLevelButton;
         [SerializeField] Button[] restartButtons;
+        [SerializeField] Button[] menuButtons;
+        /// <summary>Số coin thưởng trên popup thắng và popup thua.</summary>
+        [SerializeField] Text[] rewardCoinTexts;
+        [SerializeField] Text rewardGemText;
+        [SerializeField] GameObject rewardGemRow;
+
+        [Header("Tạm dừng")]
+        [SerializeField] Button pauseButton;
+        [SerializeField] Button resumeButton;
+        [SerializeField] GameObject pausePanel;
+
+        [Header("Thẻ nâng cấp")]
         [SerializeField] GameObject perkPanel;
         [SerializeField] Button[] perkButtons;
         [SerializeField] Image[] perkIcons;
@@ -31,10 +43,11 @@ namespace CatDefender
         {
             buyButton.onClick.AddListener(game.BuyCat);
             repairButton.onClick.AddListener(game.RepairWall);
-            prevLevelButton.onClick.AddListener(() => game.LoadLevel(game.LevelNumber - 2));
-            skipLevelButton.onClick.AddListener(() => game.LoadLevel(game.LevelNumber));
             nextLevelButton.onClick.AddListener(() => game.LoadLevel(game.LevelNumber));
+            pauseButton.onClick.AddListener(() => game.SetPaused(true));
+            resumeButton.onClick.AddListener(() => game.SetPaused(false));
             foreach (Button b in restartButtons) b.onClick.AddListener(game.Restart);
+            foreach (Button b in menuButtons) b.onClick.AddListener(game.GoToMenu);
             for (int i = 0; i < addonButtons.Length; i++)
             {
                 int index = i;
@@ -49,26 +62,36 @@ namespace CatDefender
             game.Changed += Refresh;
             game.Wallet.Changed += Refresh;
             game.Wall.Changed += Refresh;
+            Loc.Changed += Refresh;
             Refresh();
         }
 
+        void OnDestroy() => Loc.Changed -= Refresh;
+
         void Refresh()
         {
+            bool playing = game.State == GameState.Playing;
             coinText.text = game.Wallet.Coins.ToString();
-            waveText.text = string.Format(Strings.WaveFormat, game.CurrentWave, game.WaveCount);
-            levelText.text = string.Format(Strings.LevelFormat, game.LevelNumber);
+            waveText.text = Loc.T("wave", game.CurrentWave, game.WaveCount);
+            levelText.text = Loc.T("level", game.LevelNumber);
             buyCostText.text = game.CatCost.ToString();
             repairCostText.text = game.RepairCost.ToString();
-            buyButton.interactable = game.CanBuyCat;
-            repairButton.interactable = game.CanRepair;
+            buyButton.interactable = game.CanBuyCat && !game.Paused;
+            repairButton.interactable = game.CanRepair && !game.Paused;
+            pauseButton.interactable = playing && game.PerkChoices == null;
             for (int i = 0; i < addonButtons.Length; i++)
             {
                 addonButtons[i].interactable = game.CanUseAddon(i);
                 addonCountTexts[i].text = game.AddonUsesLeft(i).ToString();
             }
+
             winPanel.SetActive(game.State == GameState.Won);
             losePanel.SetActive(game.State == GameState.Lost);
+            pausePanel.SetActive(playing && game.UserPaused);
             nextLevelButton.gameObject.SetActive(game.HasNextLevel);
+            foreach (Text t in rewardCoinTexts) t.text = "+" + game.RewardCoins;
+            rewardGemText.text = "+" + game.RewardGems;
+            rewardGemRow.SetActive(game.RewardGems > 0);
 
             PerkData[] choices = game.PerkChoices;
             perkPanel.SetActive(choices != null);
@@ -79,8 +102,8 @@ namespace CatDefender
                 perkButtons[i].gameObject.SetActive(used);
                 if (!used) continue;
                 perkIcons[i].sprite = choices[i].icon;
-                perkTitles[i].text = choices[i].title;
-                perkDescriptions[i].text = choices[i].description;
+                perkTitles[i].text = Loc.T(choices[i].titleKey);
+                perkDescriptions[i].text = Loc.T(choices[i].descKey);
             }
         }
     }

@@ -1,6 +1,6 @@
 # Lộ trình CatDefender: 6 mốc
 
-> Lập ngày 2026-11-10. Trạng thái: **mốc 1, 2 và 2.5 xong; chờ chủ dự án chơi thử lại mốc 2.5 trước khi sang mốc 3.**
+> Lập ngày 2026-11-10. Trạng thái: **mốc 1, 2, 2.5 và 3 xong; chờ chủ dự án chơi thử mốc 3. Tiếp theo là mốc 4.**
 
 ## Cách đọc con số
 
@@ -116,7 +116,7 @@ Bản chơi được trọn vẹn (hết mốc 4): 50 giờ AI, khoảng 2 tuầ
 
 ---
 
-## Mốc 3: Ngoài màn chơi (18 giờ AI, 2 giờ bạn)
+## Mốc 3: Ngoài màn chơi (18 giờ AI, 2 giờ bạn) — XONG, thực tế khoảng 1 giờ AI
 
 **Mục tiêu:** khép kín vòng chơi từ mở app đến level kế tiếp.
 
@@ -137,6 +137,26 @@ Bản chơi được trọn vẹn (hết mốc 4): 50 giờ AI, khoảng 2 tuầ
 - Từ landing chơi liên tục được: chọn level, thắng, nhận thưởng, nâng cấp, sang level sau.
 - Thoát app và mở lại, tiến trình còn nguyên.
 - Mọi nút trên mọi màn hình đều hoạt động hoặc bị vô hiệu rõ ràng.
+
+**Kết quả kiểm tra (2026-11-10):**
+- 24/24 test EditMode qua (thêm test cho giá nâng cấp, phần thưởng, lưu/tải JSON, sửa dữ liệu lưu hỏng, bảng chuỗi đủ hai ngôn ngữ, khoá chuỗi của thẻ nâng cấp).
+- Chạy cả luồng trong Play mode, console không có lỗi: màn chào, bản đồ, mua 2 cấp Máu tường + 1 cấp addon + 1 gói coin (coin và gem trừ đúng), vào level 1 từ bản đồ (tường 190 = 150 + 2 x 20), tạm dừng (thời gian dừng), thắng (+55 coin, +5 gem, mở level 2), về menu, đổi sang tiếng Việt.
+- Tắt Play mode rồi bật lại: coin, gem, level đã mở và ngôn ngữ còn nguyên.
+- **Chưa kiểm tra được:** bấm bằng chuột/ngón tay thật trên từng nút (tôi gọi thẳng sự kiện của nút), và hiển thị trên màn hình tỉ lệ khác 16:9.
+
+**Những gì đã làm khác kế hoạch:**
+- Bản đồ level là lưới 5 chương x 6 huy hiệu, không dùng dải bản đồ cuộn ngang `LevelMap.png` của bộ asset.
+- Tiếng Việt dùng font hệ thống vì Passion One thiếu 49 ký tự có dấu. Cần một font trang trí có đủ chữ Việt để hai ngôn ngữ trông đồng bộ.
+- Logo trên màn chào là ảnh có sẵn của bộ asset, ghi "Merge Cats Defender", khác tên game đã chốt "Cats Defender".
+- Nút nhạc/âm thanh/rung đã lưu trạng thái nhưng chưa có tác dụng; âm thanh và rung làm ở mốc 4.
+- Shop chỉ có gói đổi gem lấy coin; chưa có cách mua gem (quảng cáo làm ở mốc 6).
+
+**Kinh tế bản nháp (chỉnh ở mốc 5, số nằm trong `BuildMeta` của `GameBuilder.cs`):**
+- Thắng: 40 + 15 x số level coin. Thua: 30% phần thưởng thắng, nhân tỉ lệ wave đã qua.
+- Thắng lần đầu: +5 gem (level có boss +15). Khởi đầu có 10 gem.
+- Nâng cấp vĩnh viễn, mỗi loại 5 cấp: Sát thương mèo +10%/cấp (giá 100, x1,8 mỗi cấp), Máu tường +20/cấp (80), Coin khởi đầu +8/cấp (80).
+- Addon, mỗi loại 5 cấp: +20% sát thương và thời gian mỗi cấp (giá 80, x1,8 mỗi cấp).
+- Gói coin: 10 gem = 300 coin, 25 gem = 900, 50 gem = 2200.
 
 **Việc của bạn:** chơi liên tục 10 level đầu, kiểm tra từng màn hình.
 
@@ -229,6 +249,7 @@ Bản chơi được trọn vẹn (hết mốc 4): 50 giờ AI, khoảng 2 tuầ
 
 | Ngày | Mốc | Việc đã xong | Giờ AI thực tế | Ghi chú |
 |---|---|---|---|---|
+| 2026-11-10 | 3 | Lưu game, tiền tệ, menu (bản đồ, nâng cấp, addon, shop, cài đặt), tạm dừng, thưởng, bảng chuỗi Anh/Việt, vùng an toàn | khoảng 1 | Ước tính 18 giờ. |
 | 2026-11-10 | 2.5 (sửa lỗi) | Quái ở hàng trên cùng bị ảnh nền che (thứ tự vẽ âm) nên vô hình và level không kết thúc; thêm ô đặt mèo thứ 10; chuyển thùng rác xuống cạnh nút mua | 0,3 | Lỗi do chủ dự án phát hiện khi chơi thử. Có test hồi quy cho thứ tự vẽ. |
 | 2026-11-10 | 2.5 | Hàng ngang, thẻ nâng cấp, hành vi quái | dưới 1 | Mốc chèn thêm sau phản hồi chơi thử. |
 | 2026-11-10 | 2 | Toàn bộ 2.1–2.7 | 0,35 | Ước tính 14 giờ. Đo theo đồng hồ giữa hai commit. Hệ số cộng dồn hai mốc ≈ 0,05. |

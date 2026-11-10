@@ -14,6 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: CatDefender::CatDefender.PerkData
   type: 1
   icon: {fileID: 21300000, guid: 38bf56b766519c844ab6f5b87b7bcbcf, type: 3}
-  title: Sharp Claws
-  description: +25% bullet damage
+  titleKey: perk_damage_title
+  descKey: perk_damage_desc
   value: 0.25
