@@ -21,6 +21,10 @@ namespace CatDefender
             public List<Group> groups = new List<Group>();
         }
 
+        public Sprite background;
+        /// <summary>Hệ số nhân máu quái và coin thưởng của riêng level này.</summary>
+        public float enemyHpScale = 1f;
+        public float rewardScale = 1f;
         public int startCoins = 30;
         public int wallHp = 100;
         public int catBaseCost = 10;

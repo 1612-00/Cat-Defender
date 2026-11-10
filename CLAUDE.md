@@ -47,6 +47,16 @@ Giao tiếp với người dùng bằng **tiếng Việt**.
 - Font: Passion One (Google Fonts), chưa được thêm vào project.
 - **Không có âm thanh hay nhạc.**
 
+## Cách dựng và kiểm tra
+
+- **Scene, prefab và dữ liệu đều do code sinh ra**, không chỉnh tay: sửa `Assets/Game/Editor/GameBuilder.cs` rồi chạy menu `CatDefender > 2. Build Game` (hoặc `GameBuilder.Build()`). Chỉnh tay trong scene hay asset dữ liệu sẽ bị ghi đè ở lần dựng sau.
+- Chỉ số bản nháp của mèo, quái, addon và công thức sinh 30 level nằm trong `GameBuilder.cs`.
+- Thêm thư mục PNG mới: thêm vào `FixImports()` rồi chạy `CatDefender > 1. Fix Sprite Imports` trước khi Build.
+- Điều khiển Editor đang mở bằng Unity CLI: `unity recompile`, `unity command script eval '<C#>'`, `unity command test run -- --mode editor`, `unity command editor.playmode start|stop`, `unity command capture game_view -- --output-path Screenshots/x.png`.
+- Sau `recompile` hoặc đổi Play mode, Editor từ chối lệnh vài giây (lỗi 400 hoặc "Invalid response"): thử lại sau 5 giây.
+- `runtime simulate_pointer` chỉ bấm được nút UI; không giữ được trạng thái nhấn nên không kiểm tra được kéo thả. Kiểm tra kéo thả qua `BoardView.Press/Drag/Release`.
+- Đổi scene trong code Editor làm asset đã tải thành null: luôn mở scene trước rồi mới tải asset.
+
 ## Ràng buộc bản quyền
 
 Giấy phép Craftpix (https://craftpix.net/file-licenses/) cho phép dùng trong game thương mại nhưng **cấm phát tán file gốc**. Không đẩy `Assets/cat-defense-kit/`, `Ai/`, `Eps/` lên repo công khai. Không dùng asset để huấn luyện AI.

@@ -17,6 +17,8 @@ MonoBehaviour:
   damage: 8
   attackInterval: 1
   coinReward: 8
+  isBoss: 0
+  scale: 1
   walk:
   - {fileID: 21300000, guid: 9555254de4981a242809fc0836237024, type: 3}
   - {fileID: 21300000, guid: 3de6724d030ed9a4db8fbdd8ac8c68b4, type: 3}

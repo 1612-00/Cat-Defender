@@ -1,6 +1,6 @@
 # Lộ trình CatDefender: 6 mốc
 
-> Lập ngày 2026-11-10. Trạng thái: **mốc 1 xong (chờ chủ dự án chơi thử), đang làm mốc 2.**
+> Lập ngày 2026-11-10. Trạng thái: **mốc 1 và mốc 2 xong (chờ chủ dự án chơi thử), tiếp theo là mốc 3.**
 
 ## Cách đọc con số
 
@@ -58,7 +58,7 @@ Bản chơi được trọn vẹn (hết mốc 4): 50 giờ AI, khoảng 2 tuầ
 
 ---
 
-## Mốc 2: Nội dung (14 giờ AI, 2 giờ bạn)
+## Mốc 2: Nội dung (14 giờ AI, 2 giờ bạn) — XONG, thực tế 0,9 giờ AI
 
 **Mục tiêu:** đưa toàn bộ nhân vật và cơ chế chiến đấu vào game.
 
@@ -79,6 +79,15 @@ Bản chơi được trọn vẹn (hết mốc 4): 50 giờ AI, khoảng 2 tuầ
 - Chọn được level bất kỳ trong 30 level từ menu debug.
 
 **Rủi ro:** 2.1 phụ thuộc vào việc điều khiển Editor tự động có trơn không; nếu không, cộng thêm 3–5 giờ.
+
+**Kết quả kiểm tra (2026-11-10):**
+- 12/12 test EditMode qua, gồm 3 test mới kiểm tra 30 level đều có nền, wave hợp lệ, boss ở cuối chương.
+- Chạy trong Play mode các level 6, 12, 18, 24, 30: không lỗi console; level 6, 12, 18, 24 chạy tới popup thắng, level 30 chạy tới wave 9/9.
+- Boss có thanh máu trên đầu; 4 addon (chông, TNT, Cat Boxing, Cat Guardian) đều kích hoạt và hiển thị đúng; có hiệu ứng nòng súng, nổ, quái nháy đỏ khi trúng đạn.
+- Nút `<` `>` cạnh nhãn Level để nhảy level khi chơi thử (tạm thời, mốc 3 thay bằng bản đồ level). Popup thắng có nút Next Level.
+- **Chưa kiểm tra được:** cảm giác chơi và độ khó. Chỉ số là bản nháp sinh theo công thức trong `GameBuilder.cs`; tôi chỉ xác nhận level chạy được, chưa xác nhận level thắng được bằng cách chơi bình thường.
+- **Điều tôi quan sát được về cân bằng:** tường 100 máu sập rất nhanh khi vài quái chạy nhanh (loại 3, 5, 7) tới nơi; cần xem lại ở mốc 5.
+- Boss chưa có đòn đánh riêng, chỉ khác ở máu, sát thương, kích thước và thanh máu.
 
 **Việc của bạn:** chơi thử 5–6 level rải đều, ghi lại quái hoặc addon nào thấy sai hoặc chán.
 
@@ -197,4 +206,5 @@ Bản chơi được trọn vẹn (hết mốc 4): 50 giờ AI, khoảng 2 tuầ
 
 | Ngày | Mốc | Việc đã xong | Giờ AI thực tế | Ghi chú |
 |---|---|---|---|---|
+| 2026-11-10 | 2 | Toàn bộ 2.1–2.7 | 0,9 | Ước tính 14 giờ. Hệ số cộng dồn hai mốc ≈ 0,08. |
 | 2026-11-10 | 1 | Toàn bộ 1.1–1.7 | 0,7 | Ước tính 7 giờ; hệ số thực tế/ước tính ≈ 0,1. Điều khiển Editor qua Unity CLI chạy trơn. |

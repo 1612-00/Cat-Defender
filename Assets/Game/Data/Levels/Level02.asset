@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: da797fc5023a75543bdeb0b670242f9e, type: 3}
+  m_Name: Level02
+  m_EditorClassIdentifier: CatDefender::CatDefender.LevelData
+  background: {fileID: 21300000, guid: 764caf49ef4faf84d80ff24280606564, type: 3}
+  enemyHpScale: 1.1
+  rewardScale: 1.08
+  startCoins: 32
+  wallHp: 100
+  catBaseCost: 10
+  catCostGrowth: 1.15
+  repairCost: 25
+  repairAmount: 25
+  firstWaveDelay: 3
+  waveDelay: 4
+  waves:
+  - groups:
+    - enemy: {fileID: 11400000, guid: 7386014c71ff142408768340eee142c0, type: 2}
+      count: 5
+      interval: 1.5
+  - groups:
+    - enemy: {fileID: 11400000, guid: 7386014c71ff142408768340eee142c0, type: 2}
+      count: 7
+      interval: 1.4285715
+  - groups:
+    - enemy: {fileID: 11400000, guid: 7386014c71ff142408768340eee142c0, type: 2}
+      count: 9
+      interval: 1.1111112
+  - groups:
+    - enemy: {fileID: 11400000, guid: 7386014c71ff142408768340eee142c0, type: 2}
+      count: 11
+      interval: 0.90909094
+  - groups:
+    - enemy: {fileID: 11400000, guid: 7386014c71ff142408768340eee142c0, type: 2}
+      count: 12
+      interval: 0.8333333

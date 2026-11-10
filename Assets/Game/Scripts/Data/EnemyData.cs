@@ -10,6 +10,8 @@ namespace CatDefender
         public int damage = 5;
         public float attackInterval = 1f;
         public int coinReward = 4;
+        public bool isBoss;
+        public float scale = 1f;
         public Sprite[] walk;
         public Sprite[] attack;
         public Sprite[] dead;

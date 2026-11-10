@@ -12,6 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: da797fc5023a75543bdeb0b670242f9e, type: 3}
   m_Name: Level01
   m_EditorClassIdentifier: CatDefender::CatDefender.LevelData
+  background: {fileID: 21300000, guid: 764caf49ef4faf84d80ff24280606564, type: 3}
+  enemyHpScale: 1
+  rewardScale: 1
   startCoins: 30
   wallHp: 100
   catBaseCost: 10
@@ -23,30 +26,21 @@ MonoBehaviour:
   waves:
   - groups:
     - enemy: {fileID: 11400000, guid: 7386014c71ff142408768340eee142c0, type: 2}
-      count: 6
+      count: 5
       interval: 1.5
   - groups:
     - enemy: {fileID: 11400000, guid: 7386014c71ff142408768340eee142c0, type: 2}
-      count: 10
-      interval: 1.2
+      count: 7
+      interval: 1.4285715
   - groups:
     - enemy: {fileID: 11400000, guid: 7386014c71ff142408768340eee142c0, type: 2}
       count: 8
+      interval: 1.25
+  - groups:
+    - enemy: {fileID: 11400000, guid: 7386014c71ff142408768340eee142c0, type: 2}
+      count: 10
       interval: 1
-    - enemy: {fileID: 11400000, guid: 909bc9d28c45333458724352a6aa8f84, type: 2}
-      count: 4
-      interval: 1.5
   - groups:
     - enemy: {fileID: 11400000, guid: 7386014c71ff142408768340eee142c0, type: 2}
       count: 12
-      interval: 0.9
-    - enemy: {fileID: 11400000, guid: 909bc9d28c45333458724352a6aa8f84, type: 2}
-      count: 6
-      interval: 1.2
-  - groups:
-    - enemy: {fileID: 11400000, guid: 909bc9d28c45333458724352a6aa8f84, type: 2}
-      count: 10
-      interval: 1
-    - enemy: {fileID: 11400000, guid: 7386014c71ff142408768340eee142c0, type: 2}
-      count: 10
-      interval: 0.6
+      interval: 0.8333333

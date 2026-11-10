@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8294b167b2e63f243b8a97e8d4054be0, type: 3}
+  m_Name: Boxing
+  m_EditorClassIdentifier: CatDefender::CatDefender.AddonData
+  type: 2
+  icon: {fileID: 21300000, guid: 8fefba887f4b57f499c87f7f0868e30f, type: 3}
+  uses: 2
+  duration: 10
+  damage: 25
+  tickInterval: 0.5
+  range: 2.5
+  frames:
+  - {fileID: 21300000, guid: f20b7e320ec2b7a41b18a5d73d65ebc1, type: 3}
+  - {fileID: 21300000, guid: bece55c462dc80f4d9561b0749862aea, type: 3}
+  - {fileID: 21300000, guid: b5ac373f1f94c0946b98e2435cdf76bd, type: 3}
+  - {fileID: 21300000, guid: 7a699ace272d9a44d897b9e8efed9da6, type: 3}
+  - {fileID: 21300000, guid: 92e035b111c0e9a4da43da071359b91a, type: 3}
+  - {fileID: 21300000, guid: 55dfe52d32c5d4c4388eaa9f5e3a3975, type: 3}
+  - {fileID: 21300000, guid: b57fff784af2d4e4c91974dd6605c497, type: 3}
+  - {fileID: 21300000, guid: ab259b6b829207545b9e9fbf78386a7c, type: 3}
+  - {fileID: 21300000, guid: bd02522810f3a6e408c5f9321b652b6a, type: 3}
+  - {fileID: 21300000, guid: 24b37cc538e6b2d4598c760ff73a61f7, type: 3}
+  - {fileID: 21300000, guid: 01f41d15bde0262499678d93c577c2b5, type: 3}
+  - {fileID: 21300000, guid: 19e74e0ffe19de644bb5f097ebc816df, type: 3}
+  - {fileID: 21300000, guid: 9a003a7dc3c59e34bbf116b513c05173, type: 3}
+  - {fileID: 21300000, guid: b6ad68ffe62fb8540a8fefa28481fa26, type: 3}
+  - {fileID: 21300000, guid: e238152b28b7316448636def508e9f93, type: 3}
+  - {fileID: 21300000, guid: eead34ea88e8c434e838327c7f240e92, type: 3}
+  - {fileID: 21300000, guid: bb6f84c1c1acd5d4d84a12684ef1df96, type: 3}
+  - {fileID: 21300000, guid: ecd6288f0bc39964aaf120e801ada3d3, type: 3}
+  - {fileID: 21300000, guid: d5ada1597945b454c9058d15d0f7e334, type: 3}
+  - {fileID: 21300000, guid: 23e1bbf09ed5cc24f8ccff4738c7d135, type: 3}

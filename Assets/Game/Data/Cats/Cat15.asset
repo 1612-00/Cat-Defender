@@ -16,7 +16,7 @@ MonoBehaviour:
   damage: 129757
   fireInterval: 0.8
   bulletSpeed: 22
-  bulletSprite: {fileID: 21300000, guid: cb99961a8eb6f48498ae080312a92e11, type: 3}
+  bulletSprite: {fileID: 21300000, guid: 30f8140ed815e0046b26b1764317d3cc, type: 3}
   idle:
   - {fileID: 21300000, guid: f398a50cd84b17844ab89dbbf53aa3a7, type: 3}
   - {fileID: 21300000, guid: b0d9987bcbf5f4b438294b63aa29d43d, type: 3}

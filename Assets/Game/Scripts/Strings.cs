@@ -7,5 +7,7 @@ namespace CatDefender
         public const string BuyCat = "Buy Cat";
         public const string RepairWall = "Repair Wall";
         public const string PlayAgain = "Play Again";
+        public const string NextLevel = "Next Level";
+        public const string LevelFormat = "Level {0}";
     }
 }
