@@ -3,7 +3,7 @@ using UnityEngine.InputSystem;
 
 namespace CatDefender
 {
-    /// <summary>Lưới ô đặt mèo: hiển thị, mua, kéo thả, ghép, bỏ vào thùng rác.</summary>
+    /// <summary>Lưới ô đặt mèo: hiển thị, mua, kéo thả, ghép, bỏ vào thùng rác. Mỗi ô thuộc một hàng.</summary>
     public sealed class BoardView : MonoBehaviour
     {
         const int IdleOrder = 10, DragOrder = 900;
@@ -12,6 +12,8 @@ namespace CatDefender
         [SerializeField] Cat catPrefab;
         [SerializeField] CatData[] catsByLevel;
         [SerializeField] Vector2[] slots;
+        /// <summary>Hàng của từng ô, cùng thứ tự với <see cref="slots"/>.</summary>
+        [SerializeField] int[] slotLanes;
         [SerializeField] Vector2 trash;
         [SerializeField] float slotRadius = 0.6f;
 
@@ -34,26 +36,39 @@ namespace CatDefender
         {
             int slot = board.FirstEmpty();
             if (slot < 0) return false;
-            board.Place(slot, level);
+            board.Place(slot, Mathf.Clamp(level, 1, catsByLevel.Length));
             Spawn(slot);
             return true;
+        }
+
+        public void StunLane(int lane, float seconds)
+        {
+            for (int i = 0; i < cats.Length; i++)
+                if (cats[i] != null && slotLanes[i] == lane) cats[i].Stun(seconds);
         }
 
         void Spawn(int slot)
         {
             if (cats[slot] != null) Destroy(cats[slot].gameObject);
             Cat cat = Instantiate(catPrefab, slots[slot], Quaternion.identity, transform);
-            cat.Init(catsByLevel[board.LevelAt(slot) - 1], game);
+            cat.Init(catsByLevel[board.LevelAt(slot) - 1], game, slotLanes[slot]);
             cat.GetComponent<SpriteRenderer>().sortingOrder = IdleOrder;
             cats[slot] = cat;
+        }
+
+        void Place(int slot)
+        {
+            cats[slot].transform.position = slots[slot];
+            cats[slot].Lane = slotLanes[slot];
         }
 
         void Update()
         {
             Pointer pointer = Pointer.current;
-            if (pointer == null || game.State != GameState.Playing)
+            if (pointer == null || game.State != GameState.Playing || game.Paused)
             {
                 CancelDrag();
+                wasDown = pointer != null && pointer.press.isPressed;
                 return;
             }
 
@@ -104,7 +119,7 @@ namespace CatDefender
                 case MoveResult.Moved:
                     cats[to] = cats[from];
                     cats[from] = null;
-                    cats[to].transform.position = slots[to];
+                    Place(to);
                     break;
                 case MoveResult.Merged:
                     Destroy(cats[from].gameObject);
@@ -113,11 +128,11 @@ namespace CatDefender
                     break;
                 case MoveResult.Swapped:
                     (cats[from], cats[to]) = (cats[to], cats[from]);
-                    cats[from].transform.position = slots[from];
-                    cats[to].transform.position = slots[to];
+                    Place(from);
+                    Place(to);
                     break;
                 default:
-                    cats[from].transform.position = slots[from];
+                    Place(from);
                     break;
             }
         }
@@ -125,7 +140,7 @@ namespace CatDefender
         void CancelDrag()
         {
             if (dragFrom < 0) return;
-            cats[dragFrom].transform.position = slots[dragFrom];
+            Place(dragFrom);
             cats[dragFrom].GetComponent<SpriteRenderer>().sortingOrder = IdleOrder;
             dragFrom = -1;
         }

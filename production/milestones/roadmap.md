@@ -1,6 +1,6 @@
 # Lộ trình CatDefender: 6 mốc
 
-> Lập ngày 2026-11-10. Trạng thái: **mốc 1 và mốc 2 xong (chờ chủ dự án chơi thử), tiếp theo là mốc 3.**
+> Lập ngày 2026-11-10. Trạng thái: **mốc 1, 2 và 2.5 xong; chờ chủ dự án chơi thử lại mốc 2.5 trước khi sang mốc 3.**
 
 ## Cách đọc con số
 
@@ -90,6 +90,29 @@ Bản chơi được trọn vẹn (hết mốc 4): 50 giờ AI, khoảng 2 tuầ
 - Boss chưa có đòn đánh riêng, chỉ khác ở máu, sát thương, kích thước và thanh máu.
 
 **Việc của bạn:** chơi thử 5–6 level rải đều, ghi lại quái hoặc addon nào thấy sai hoặc chán.
+
+---
+
+## Mốc 2.5: Chiều sâu gameplay (chèn thêm ngày 2026-11-10) — XONG, thực tế dưới 1 giờ AI (ước chừng, không đo được chính xác)
+
+**Lý do:** chủ dự án chơi thử mốc 1–2, không gặp lỗi nhưng thấy vòng chơi quá đơn giản. Các mốc 3–6 không thêm chiều sâu cho lúc đang chơi, nên chèn mốc này trước.
+
+| # | Đầu việc | Kết quả |
+|---|---|---|
+| 2.5.1 | Hàng ngang: mèo chỉ bắn quái trên hàng của nó; quái đi theo hàng; dải đỏ báo hàng sắp có quái trong lúc nghỉ | Xong |
+| 2.5.2 | Chọn 1 trong 3 thẻ nâng cấp sau mỗi wave (8 loại thẻ, cộng dồn trong level) | Xong |
+| 2.5.3 | Quái có hành vi riêng: giáp, đổi hàng, tách đôi khi chết; boss gọi đàn em và làm choáng mèo | Xong |
+
+**Kết quả kiểm tra (2026-11-10):**
+- 17/17 test EditMode qua (thêm test cho thẻ nâng cấp, bộ chọn ngẫu nhiên, số hàng theo wave, giờ nghỉ trước wave đầu).
+- Chạy trong Play mode: level 1 thua khi không có mèo ở hàng bị tấn công (đúng thiết kế); level 6, 9, 30 chạy tới popup thắng với mèo đặt sẵn ở mọi hàng và thẻ được chọn tự động; console không có lỗi.
+- Kiểm tra trực tiếp từng hành vi: quái tách thành 2 con ở hai hàng; giáp 3 biến 10 sát thương thành 7 và 2 thành 1; quái nhanh đổi từ hàng 2 sang hàng 1; boss gọi thêm 2 quái mỗi 7 giây và làm mèo cùng hàng choáng ở giây thứ 9, lặp lại ở giây 18.
+- Bảng chọn thẻ hiển thị đúng 3 thẻ, game tạm dừng trong lúc chọn và chạy lại sau khi chọn.
+- **Chưa kiểm tra được:** cảm giác chơi (có đủ việc để làm chưa, 5 giây nghỉ có đủ để xếp mèo không), và độ khó. Chỉ số vẫn là bản nháp.
+- Thay đổi chỉ số kèm theo: máu tường 100 → 150, nghỉ trước mỗi wave 5 giây.
+- Chữ trên thẻ mới có tiếng Anh; bảng chuỗi Anh/Việt làm ở mốc 3.
+
+**Việc của bạn:** chơi lại level 1–10, cho biết (1) kéo mèo theo hàng có thấy bận tay và có ý nghĩa không, (2) thẻ nâng cấp có tạo khác biệt giữa các lượt không, (3) loại quái nào gây khó chịu theo kiểu xấu.
 
 ---
 
@@ -206,5 +229,6 @@ Bản chơi được trọn vẹn (hết mốc 4): 50 giờ AI, khoảng 2 tuầ
 
 | Ngày | Mốc | Việc đã xong | Giờ AI thực tế | Ghi chú |
 |---|---|---|---|---|
+| 2026-11-10 | 2.5 | Hàng ngang, thẻ nâng cấp, hành vi quái | dưới 1 | Mốc chèn thêm sau phản hồi chơi thử. |
 | 2026-11-10 | 2 | Toàn bộ 2.1–2.7 | 0,35 | Ước tính 14 giờ. Đo theo đồng hồ giữa hai commit. Hệ số cộng dồn hai mốc ≈ 0,05. |
 | 2026-11-10 | 1 | Toàn bộ 1.1–1.7 | 0,7 | Ước tính 7 giờ; hệ số thực tế/ước tính ≈ 0,1. Điều khiển Editor qua Unity CLI chạy trơn. |

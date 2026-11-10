@@ -21,6 +21,11 @@ namespace CatDefender
         [SerializeField] GameObject losePanel;
         [SerializeField] Button nextLevelButton;
         [SerializeField] Button[] restartButtons;
+        [SerializeField] GameObject perkPanel;
+        [SerializeField] Button[] perkButtons;
+        [SerializeField] Image[] perkIcons;
+        [SerializeField] Text[] perkTitles;
+        [SerializeField] Text[] perkDescriptions;
 
         void Start()
         {
@@ -34,6 +39,11 @@ namespace CatDefender
             {
                 int index = i;
                 addonButtons[i].onClick.AddListener(() => game.UseAddon(index));
+            }
+            for (int i = 0; i < perkButtons.Length; i++)
+            {
+                int index = i;
+                perkButtons[i].onClick.AddListener(() => game.ChoosePerk(index));
             }
 
             game.Changed += Refresh;
@@ -54,11 +64,24 @@ namespace CatDefender
             for (int i = 0; i < addonButtons.Length; i++)
             {
                 addonButtons[i].interactable = game.CanUseAddon(i);
-                addonCountTexts[i].text = game.AddonUsesLeft(i) + "/" + game.Addon(i).uses;
+                addonCountTexts[i].text = game.AddonUsesLeft(i).ToString();
             }
             winPanel.SetActive(game.State == GameState.Won);
             losePanel.SetActive(game.State == GameState.Lost);
             nextLevelButton.gameObject.SetActive(game.HasNextLevel);
+
+            PerkData[] choices = game.PerkChoices;
+            perkPanel.SetActive(choices != null);
+            if (choices == null) return;
+            for (int i = 0; i < perkButtons.Length; i++)
+            {
+                bool used = i < choices.Length;
+                perkButtons[i].gameObject.SetActive(used);
+                if (!used) continue;
+                perkIcons[i].sprite = choices[i].icon;
+                perkTitles[i].text = choices[i].title;
+                perkDescriptions[i].text = choices[i].description;
+            }
         }
     }
 }

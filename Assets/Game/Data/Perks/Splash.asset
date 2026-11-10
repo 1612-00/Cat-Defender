@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa680bc1fe2a93146bc21177f3244594, type: 3}
+  m_Name: Splash
+  m_EditorClassIdentifier: CatDefender::CatDefender.PerkData
+  type: 2
+  icon: {fileID: 21300000, guid: a1e6b3b21f68cc94191b9eb95e158094, type: 3}
+  title: Blast Rounds
+  description: Bullets splash 30% damage nearby
+  value: 0.3

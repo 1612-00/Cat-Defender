@@ -31,12 +31,20 @@ namespace CatDefender
             Refresh();
         }
 
+        /// <summary>Tăng máu tối đa và hồi luôn phần vừa tăng.</summary>
+        public void AddMax(int amount)
+        {
+            MaxHp += amount;
+            Hp += amount;
+            Refresh();
+        }
+
         void Refresh()
         {
             float f = MaxHp > 0 ? (float)Hp / MaxHp : 0;
-            var s = barFill.localScale;
+            Vector3 s = barFill.localScale;
             barFill.localScale = new Vector3(s.x, barHeight * f, 1);
-            var p = barFill.position;
+            Vector3 p = barFill.position;
             barFill.position = new Vector3(p.x, barBottomY + barHeight * f * 0.5f, p.z);
             Changed?.Invoke();
         }

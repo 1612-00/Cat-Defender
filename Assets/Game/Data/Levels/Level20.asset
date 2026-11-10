@@ -16,13 +16,13 @@ MonoBehaviour:
   enemyHpScale: 6.1159115
   rewardScale: 4.3157043
   startCoins: 129
-  wallHp: 100
+  wallHp: 150
   catBaseCost: 10
   catCostGrowth: 1.15
   repairCost: 25
   repairAmount: 25
-  firstWaveDelay: 3
-  waveDelay: 4
+  firstWaveDelay: 5
+  waveDelay: 5
   waves:
   - groups:
     - enemy: {fileID: 11400000, guid: 7386014c71ff142408768340eee142c0, type: 2}

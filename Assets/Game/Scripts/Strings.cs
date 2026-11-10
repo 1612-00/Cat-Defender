@@ -9,5 +9,6 @@ namespace CatDefender
         public const string PlayAgain = "Play Again";
         public const string NextLevel = "Next Level";
         public const string LevelFormat = "Level {0}";
+        public const string ChoosePerk = "Choose an upgrade";
     }
 }

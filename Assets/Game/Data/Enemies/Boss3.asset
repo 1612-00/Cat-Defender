@@ -19,6 +19,16 @@ MonoBehaviour:
   coinReward: 300
   isBoss: 1
   scale: 1.25
+  armor: 0
+  switchesLane: 0
+  splitInto: {fileID: 0}
+  splitCount: 0
+  summon: {fileID: 11400000, guid: 2746e4bd1cd6f824ab457901caaa677d, type: 2}
+  summonCount: 2
+  summonInterval: 7
+  stunInterval: 9
+  stunDuration: 2.5
+  tint: {r: 1, g: 1, b: 1, a: 1}
   walk:
   - {fileID: 21300000, guid: e678db8c23e61d949bb36e764cb90818, type: 3}
   - {fileID: 21300000, guid: 62d481d84fc16084aa4da6606fd18c06, type: 3}

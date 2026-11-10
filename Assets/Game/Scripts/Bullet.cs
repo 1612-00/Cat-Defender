@@ -5,15 +5,18 @@ namespace CatDefender
     [RequireComponent(typeof(SpriteRenderer))]
     public sealed class Bullet : MonoBehaviour
     {
+        GameManager game;
         Enemy target;
-        int damage;
+        int damage, pending;
         float speed;
 
-        public void Init(Enemy enemy, int dmg, float bulletSpeed, Sprite sprite)
+        public void Init(GameManager manager, Enemy enemy, int dmg, float bulletSpeed, Sprite sprite)
         {
+            game = manager;
             target = enemy;
-            target.PendingDamage += dmg;
             damage = dmg;
+            pending = enemy.Mitigate(dmg);
+            target.PendingDamage += pending;
             speed = bulletSpeed;
             GetComponent<SpriteRenderer>().sprite = sprite;
         }
@@ -31,8 +34,8 @@ namespace CatDefender
             float step = speed * Time.deltaTime;
             if (to.sqrMagnitude <= step * step)
             {
-                target.PendingDamage -= damage;
-                target.TakeDamage(damage);
+                target.PendingDamage -= pending;
+                game.OnBulletHit(target, damage);
                 Destroy(gameObject);
                 return;
             }

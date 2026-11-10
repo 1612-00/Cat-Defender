@@ -20,7 +20,7 @@ namespace CatDefender
         readonly float waveDelay;
         int wave, group, spawnedInGroup;
         float timer;
-        bool resting;
+        bool resting = true;
 
         public WaveRunner(IReadOnlyList<IReadOnlyList<SpawnGroup>> waves, float waveDelay, float firstDelay)
         {
@@ -33,6 +33,8 @@ namespace CatDefender
         /// <summary>Số thứ tự wave đang chạy, tính từ 1.</summary>
         public int CurrentWave => System.Math.Min(wave + 1, waves.Count);
         public bool AllSpawned => wave >= waves.Count;
+        /// <summary>Đang nghỉ trước một wave (kể cả trước wave đầu tiên).</summary>
+        public bool Resting => resting && !AllSpawned;
 
         /// <summary>Thêm vào <paramref name="spawns"/> id các quái cần sinh trong khung hình này.</summary>
         public void Tick(float dt, int aliveEnemies, List<int> spawns)
@@ -41,7 +43,8 @@ namespace CatDefender
 
             if (resting)
             {
-                if (aliveEnemies > 0) return;
+                // Trước wave đầu tiên chỉ chờ hết giờ; giữa các wave phải hạ hết quái trước.
+                if (aliveEnemies > 0 && wave > 0) return;
                 timer -= dt;
                 if (timer > 0) return;
                 resting = false;

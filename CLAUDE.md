@@ -1,6 +1,6 @@
 # Cats Defender
 
-Game mobile thể loại **merge + thủ tường**: người chơi mua mèo, ghép hai con cùng cấp thành cấp cao hơn, mèo tự bắn zombie đang tiến tới đập tường. Chiến dịch theo level, mỗi level gồm nhiều wave.
+Game mobile thể loại **merge + thủ tường theo hàng**: người chơi mua mèo, ghép hai con cùng cấp thành cấp cao hơn, xếp mèo vào 5 hàng ngang; mèo chỉ bắn zombie trên hàng của nó. Sau mỗi wave chọn 1 trong 3 thẻ nâng cấp. Chiến dịch theo level, mỗi level gồm nhiều wave.
 
 Giao tiếp với người dùng bằng **tiếng Việt**.
 

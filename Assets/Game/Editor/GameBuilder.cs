@@ -79,7 +79,7 @@ namespace CatDefender.EditorTools
         [MenuItem("CatDefender/2. Build Game")]
         public static void Build()
         {
-            foreach (string dir in new[] { "Art", "Data", "Data/Cats", "Data/Enemies", "Data/Levels", "Data/Addons", "Prefabs", "Scenes" })
+            foreach (string dir in new[] { "Art", "Data", "Data/Cats", "Data/Enemies", "Data/Levels", "Data/Addons", "Data/Perks", "Prefabs", "Scenes" })
                 Directory.CreateDirectory($"{Root}/{dir}");
             AssetDatabase.Refresh();
 
@@ -93,8 +93,10 @@ namespace CatDefender.EditorTools
 
             CatData[] cats = BuildCats();
             EnemyData[] regs = Enumerable.Range(0, RegCount).Select(BuildReg).ToArray();
-            EnemyData[] bosses = Enumerable.Range(0, BossCount).Select(BuildBoss).ToArray();
+            SetBehaviours(regs);
+            EnemyData[] bosses = Enumerable.Range(0, BossCount).Select(i => BuildBoss(i, regs)).ToArray();
             AddonData[] addons = BuildAddons();
+            PerkData[] perks = BuildPerks();
             LevelData[] levels = Enumerable.Range(1, LevelCount).Select(n => BuildLevel(n, regs, bosses)).ToArray();
 
             BuildPrefab<Cat>("Cat", unlit, 10, typeof(SpriteAnimator));
@@ -138,10 +140,24 @@ namespace CatDefender.EditorTools
             Vector2[] slots = SlotRows.SelectMany((y, row) => row == SlotRows.Length - 1
                 ? new[] { new Vector2(SlotColRight, y) }
                 : new[] { new Vector2(SlotColLeft, y), new Vector2(SlotColRight, y) }).ToArray();
+            int[] slotLanes = slots.Select(s => Array.IndexOf(SlotRows, s.y)).ToArray();
             Set(board, ("game", game), ("catPrefab", catPrefab), ("catsByLevel", cats), ("slots", slots),
-                ("trash", new Vector2(SlotColLeft, SlotRows[SlotRows.Length - 1])));
+                ("slotLanes", slotLanes), ("trash", new Vector2(SlotColLeft, SlotRows[SlotRows.Length - 1])));
+
+            // Dải đỏ mờ trên từng hàng, bật trong lúc nghỉ để báo hàng sắp có quái.
+            const float warnLeft = -2.4f, warnRight = 10.72f;
+            var warningsRoot = new GameObject("LaneWarnings").transform;
+            SpriteRenderer[] warnings = SlotRows.Select((y, i) =>
+            {
+                SpriteRenderer w = MakeRenderer("Lane" + i, warningsRoot, white, unlit, -20, new Color(1f, 0.25f, 0.2f, 0.15f));
+                w.transform.position = new Vector3((warnLeft + warnRight) * 0.5f, y, 0);
+                w.transform.localScale = new Vector3(warnRight - warnLeft, 1.0f, 1);
+                w.enabled = false;
+                return w;
+            }).ToArray();
             Set(runner, ("game", game), ("fxPrefab", fxPrefab));
-            Set(game, ("levels", levels), ("addons", addons), ("board", board), ("wall", wall),
+            Set(game, ("levels", levels), ("addons", addons), ("perkPool", perks), ("board", board), ("wall", wall),
+                ("laneYs", SlotRows), ("laneWarnings", warnings),
                 ("addonRunner", runner), ("background", background),
                 ("enemyPrefab", enemyPrefab), ("bulletPrefab", bulletPrefab), ("fxPrefab", fxPrefab),
                 ("shootFx", LoadSprites($"{Kit}/ShootFx")), ("explosionFx", LoadSprites($"{Kit}/Explosion")));
@@ -194,9 +210,35 @@ namespace CatDefender.EditorTools
             return BuildEnemy($"Reg{i + 1}", $"Enemy Reg {i + 1}", hp, speed, damage, 1f, reward, false, 1f);
         }
 
-        static EnemyData BuildBoss(int i) => BuildEnemy($"Boss{i + 1}", $"Enemy Boss {i + 1}",
-            hp: Mathf.RoundToInt(600 * Mathf.Pow(1.9f, i)), speed: 0.4f, damage: 30 + 10 * i,
-            attackInterval: 1.5f, reward: 100 * (i + 1), isBoss: true, scale: 1.25f);
+        /// <summary>Hành vi riêng của quái thường: giáp, đổi hàng, tách đôi khi chết.</summary>
+        static void SetBehaviours(EnemyData[] regs)
+        {
+            var steel = new Color(0.72f, 0.82f, 1f);
+            regs[1].armor = 3; regs[1].tint = steel;                    // Reg 2: giáp nhẹ
+            regs[2].switchesLane = true;                                // Reg 3: nhanh, đổi hàng
+            regs[3].splitInto = regs[0]; regs[3].splitCount = 2;        // Reg 4: chết tách thành 2 Reg 1
+            regs[4].switchesLane = true;                                // Reg 5: nhanh, đổi hàng
+            regs[5].armor = 10; regs[5].tint = steel;                   // Reg 6: giáp nặng
+            regs[6].switchesLane = true; regs[6].armor = 4;             // Reg 7: nhanh, đổi hàng, giáp nhẹ
+            regs[6].tint = steel;
+            regs[7].splitInto = regs[5]; regs[7].splitCount = 2;        // Reg 8: chết tách thành 2 Reg 6
+            foreach (EnemyData e in regs) EditorUtility.SetDirty(e);
+        }
+
+        /// <summary>Boss gọi 2 đàn em mỗi 7 giây và làm choáng mèo trên hàng của nó mỗi 9 giây.</summary>
+        static EnemyData BuildBoss(int i, EnemyData[] regs)
+        {
+            EnemyData e = BuildEnemy($"Boss{i + 1}", $"Enemy Boss {i + 1}",
+                hp: Mathf.RoundToInt(600 * Mathf.Pow(1.9f, i)), speed: 0.4f, damage: 30 + 10 * i,
+                attackInterval: 1.5f, reward: 100 * (i + 1), isBoss: true, scale: 1.25f);
+            e.summon = regs[Mathf.Min(i, 4)];
+            e.summonCount = 2;
+            e.summonInterval = 7f;
+            e.stunInterval = 9f;
+            e.stunDuration = 2.5f;
+            EditorUtility.SetDirty(e);
+            return e;
+        }
 
         static EnemyData BuildEnemy(string asset, string folder, int hp, float speed, int damage,
             float attackInterval, int reward, bool isBoss, float scale)
@@ -209,6 +251,17 @@ namespace CatDefender.EditorTools
             e.coinReward = reward;
             e.isBoss = isBoss;
             e.scale = scale;
+            // Đặt lại hành vi riêng về mặc định; SetBehaviours và BuildBoss gán lại sau.
+            e.armor = 0;
+            e.switchesLane = false;
+            e.splitInto = null;
+            e.splitCount = 0;
+            e.summon = null;
+            e.summonCount = 0;
+            e.summonInterval = 0;
+            e.stunInterval = 0;
+            e.stunDuration = 0;
+            e.tint = Color.white;
             e.walk = LoadSprites($"{Kit}/Enemies/{folder}/Walk");
             e.attack = LoadSprites($"{Kit}/Enemies/{folder}/Attack");
             e.dead = LoadSprites($"{Kit}/Enemies/{folder}/Dead");
@@ -223,6 +276,30 @@ namespace CatDefender.EditorTools
             BuildAddon("Boxing", AddonType.Boxing, 7, 2, duration: 10f, damage: 25, tick: 0.5f, range: 2.5f, "CatBoxing/Attack"),
             BuildAddon("Guardian", AddonType.Guardian, 5, 2, duration: 8f, damage: 0, tick: 0.5f, range: 0f, "Cat Guardian/Attack"),
         };
+
+        static PerkData[] BuildPerks() => new[]
+        {
+            BuildPerk("FireRate", PerkType.FireRate, "AddonIcon1", "Rapid Fire", "Cats shoot 20% faster", 0.2f),
+            BuildPerk("Damage", PerkType.Damage, "Up3", "Sharp Claws", "+25% bullet damage", 0.25f),
+            BuildPerk("Splash", PerkType.Splash, "AddonIcon3", "Blast Rounds", "Bullets splash 30% damage nearby", 0.3f),
+            BuildPerk("Coins", PerkType.Coins, "AddonIcon2", "Lucky Coins", "+30% coins from kills", 0.3f),
+            BuildPerk("Slow", PerkType.Slow, "AddonIcon4", "Sticky Shots", "Bullets slow enemies by 20%", 0.2f),
+            BuildPerk("Wall", PerkType.Wall, "WallIcon", "Thick Wall", "+40 max wall HP", 40f),
+            BuildPerk("AddonRefill", PerkType.AddonRefill, "Icon_Addon", "Restock", "+1 use of every addon", 1f),
+            BuildPerk("FreeCat", PerkType.FreeCat, "Icon_Cat", "Stray Cat", "A free level 2 cat joins", 2f),
+        };
+
+        static PerkData BuildPerk(string name, PerkType type, string icon, string title, string description, float value)
+        {
+            PerkData p = Asset($"{Root}/Data/Perks/{name}.asset", ScriptableObject.CreateInstance<PerkData>);
+            p.type = type;
+            p.icon = Ui(icon);
+            p.title = title;
+            p.description = description;
+            p.value = value;
+            EditorUtility.SetDirty(p);
+            return p;
+        }
 
         static AddonData BuildAddon(string name, AddonType type, int icon, int uses, float duration, int damage,
             float tick, float range, string framesFolder)
@@ -255,6 +332,10 @@ namespace CatDefender.EditorTools
             level.enemyHpScale = Mathf.Pow(1.10f, number - 1);
             level.rewardScale = Mathf.Pow(1.08f, number - 1);
             level.startCoins = Mathf.RoundToInt(30 * Mathf.Pow(1.08f, number - 1));
+            level.wallHp = 150;
+            // Nghỉ 5 giây trước mỗi wave để người chơi kịp xếp lại mèo theo hàng được báo.
+            level.firstWaveDelay = 5f;
+            level.waveDelay = 5f;
 
             int unlocked = Mathf.Min(RegCount, 1 + number / 3);
             int waveCount = 5 + chapter;
@@ -384,13 +465,45 @@ namespace CatDefender.EditorTools
             GameObject lose = ResultPanel("LosePanel", root, "LosePopUp", out Transform loseRoot);
             Button loseRestart = TextButton("RestartButton", loseRoot, "BtnGreen", new Vector2(0, -300), Strings.PlayAgain);
 
+            // Bảng chọn 1 trong 3 thẻ nâng cấp sau mỗi wave.
+            GameObject perkPanel = ResultPanel("PerkPanel", root, "TitleRibbon", out Transform perkRoot);
+            RectTransform ribbon = (RectTransform)perkRoot.Find("Popup");
+            ribbon.anchoredPosition = new Vector2(0, 380);
+            Label("Title", ribbon, Strings.ChoosePerk, 44, new Vector2(0, 14));
+            const int cardCount = 3;
+            var perkButtons = new Button[cardCount];
+            var perkIcons = new Image[cardCount];
+            var perkTitles = new Text[cardCount];
+            var perkDescriptions = new Text[cardCount];
+            for (int i = 0; i < cardCount; i++)
+            {
+                Image card = Img("Card" + i, perkRoot, i == 1 ? "OrangeShopBox" : "BlueShopBox", center,
+                    new Vector2((i - 1) * 400, -40));
+                card.rectTransform.localScale = Vector3.one * 1.5f;
+                perkButtons[i] = card.gameObject.AddComponent<Button>();
+                perkTitles[i] = Label("Title", card.transform, "", 26, new Vector2(0, 148));
+                perkIcons[i] = new GameObject("Icon", typeof(Image)).GetComponent<Image>();
+                perkIcons[i].transform.SetParent(card.transform, false);
+                perkIcons[i].raycastTarget = false;
+                perkIcons[i].preserveAspect = true;
+                perkIcons[i].rectTransform.sizeDelta = new Vector2(110, 110);
+                perkIcons[i].rectTransform.anchoredPosition = new Vector2(0, 40);
+                Text d = Label("Description", card.transform, "", 22, Vector2.zero);
+                d.horizontalOverflow = HorizontalWrapMode.Wrap;
+                d.rectTransform.offsetMin = new Vector2(16, 20);
+                d.rectTransform.offsetMax = new Vector2(-16, -220);
+                perkDescriptions[i] = d;
+            }
+
             var hud = canvasGo.AddComponent<Hud>();
             Set(hud, ("game", game), ("coinText", coinText), ("waveText", waveText), ("levelText", levelText),
                 ("buyCostText", buyCost), ("repairCostText", repairCost),
                 ("buyButton", buy), ("repairButton", repair), ("prevLevelButton", prev), ("skipLevelButton", skip),
                 ("addonButtons", addonButtons), ("addonCountTexts", addonCounts),
                 ("winPanel", win), ("losePanel", lose), ("nextLevelButton", next),
-                ("restartButtons", new[] { winRestart, loseRestart }));
+                ("restartButtons", new[] { winRestart, loseRestart }),
+                ("perkPanel", perkPanel), ("perkButtons", perkButtons), ("perkIcons", perkIcons),
+                ("perkTitles", perkTitles), ("perkDescriptions", perkDescriptions));
         }
 
         static Sprite Ui(string name) => LoadSprite($"{Kit}/Ui/{name}.png");
@@ -544,6 +657,14 @@ namespace CatDefender.EditorTools
                 {
                     case float f: p.floatValue = f; break;
                     case Vector2 v: p.vector2Value = v; break;
+                    case int[] ints:
+                        p.arraySize = ints.Length;
+                        for (int i = 0; i < ints.Length; i++) p.GetArrayElementAtIndex(i).intValue = ints[i];
+                        break;
+                    case float[] floats:
+                        p.arraySize = floats.Length;
+                        for (int i = 0; i < floats.Length; i++) p.GetArrayElementAtIndex(i).floatValue = floats[i];
+                        break;
                     case Vector2[] vs:
                         p.arraySize = vs.Length;
                         for (int i = 0; i < vs.Length; i++) p.GetArrayElementAtIndex(i).vector2Value = vs[i];

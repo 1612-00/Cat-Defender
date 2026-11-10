@@ -77,6 +77,65 @@ namespace CatDefender.Tests
             Assert.Greater(Economy.CatCost(10, 1.15f, 10), Economy.CatCost(10, 1.15f, 9));
         }
 
+        [Test]
+        public void WaveRunner_RestsBeforeFirstWave_EvenWithEnemiesAlive()
+        {
+            var r = TwoWaves();
+            var spawns = new List<int>();
+            Assert.IsTrue(r.Resting);
+            r.Tick(0.5f, 5, spawns);
+            Assert.IsEmpty(spawns);
+            r.Tick(0.6f, 5, spawns);
+            Assert.AreEqual(1, spawns.Count);
+            Assert.IsFalse(r.Resting);
+        }
+
+        [Test]
+        public void Perks_StackAndScaleValues()
+        {
+            var p = new Perks();
+            p.Apply(PerkType.Damage, 0.25f);
+            p.Apply(PerkType.Damage, 0.25f);
+            p.Apply(PerkType.FireRate, 0.25f);
+            p.Apply(PerkType.Coins, 0.5f);
+            Assert.AreEqual(150, p.Damage(100));
+            Assert.AreEqual(0.8f, p.FireInterval(1f), 0.001f);
+            Assert.AreEqual(15, p.Coins(10));
+            Assert.AreEqual(1, p.Damage(0));
+        }
+
+        [Test]
+        public void Perks_SlowIsCapped()
+        {
+            var p = new Perks();
+            for (int i = 0; i < 10; i++) p.Apply(PerkType.Slow, 0.2f);
+            Assert.AreEqual(0.7f, p.SlowFraction, 0.001f);
+        }
+
+        [Test]
+        public void Picker_ReturnsDistinctSortedIndicesInRange()
+        {
+            var rng = new System.Random(1);
+            for (int n = 0; n < 50; n++)
+            {
+                List<int> picks = Picker.Distinct(5, 3, rng);
+                Assert.AreEqual(3, picks.Count);
+                Assert.AreEqual(3, new HashSet<int>(picks).Count);
+                Assert.That(picks, Is.Ordered);
+                Assert.That(picks, Is.All.InRange(0, 4));
+            }
+            Assert.AreEqual(5, Picker.Distinct(5, 9, rng).Count);
+        }
+
+        [Test]
+        public void ActiveLaneCount_GrowsWithWaveAndIsCapped()
+        {
+            Assert.AreEqual(2, Picker.ActiveLaneCount(1, 5));
+            Assert.AreEqual(2, Picker.ActiveLaneCount(2, 5));
+            Assert.AreEqual(3, Picker.ActiveLaneCount(3, 5));
+            Assert.AreEqual(5, Picker.ActiveLaneCount(9, 5));
+        }
+
         static WaveRunner TwoWaves() => new WaveRunner(new List<IReadOnlyList<SpawnGroup>>
         {
             new List<SpawnGroup> { new SpawnGroup { enemyId = 0, count = 3, interval = 1f } },
@@ -111,8 +170,11 @@ namespace CatDefender.Tests
         {
             var r = TwoWaves();
             var spawns = new List<int>();
-            r.Tick(60f, 0, spawns);
+            r.Tick(60f, 0, spawns); // hết giờ nghỉ đầu, sinh con thứ nhất
+            r.Tick(60f, 0, spawns); // sinh nốt wave 1 rồi dừng ở giờ nghỉ
+            r.Tick(0.1f, 3, spawns); // còn quái sống: chưa sang wave 2
             Assert.AreEqual(3, spawns.Count);
+            Assert.IsTrue(r.Resting);
         }
     }
 }

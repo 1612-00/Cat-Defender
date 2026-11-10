@@ -26,13 +26,13 @@ namespace CatDefender
         public float enemyHpScale = 1f;
         public float rewardScale = 1f;
         public int startCoins = 30;
-        public int wallHp = 100;
+        public int wallHp = 150;
         public int catBaseCost = 10;
         public float catCostGrowth = 1.15f;
         public int repairCost = 25;
         public int repairAmount = 25;
-        public float firstWaveDelay = 3f;
-        public float waveDelay = 4f;
+        public float firstWaveDelay = 5f;
+        public float waveDelay = 5f;
         public List<Wave> waves = new List<Wave>();
     }
 }

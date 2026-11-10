@@ -20,16 +20,41 @@ Ghép những chú mèo cầm súng thành mèo mạnh hơn và giữ bức tư�
 
 ## Core Loop
 
-### Trong một level (30 giây một nhịp)
+> Cập nhật 2026-11-10 sau lần chơi thử đầu: vòng chơi "mua, ghép, bấm addon" bị chủ dự án đánh giá là quá đơn giản. Đã thêm ba cơ chế: hàng ngang, thẻ nâng cấp sau wave, quái có hành vi riêng.
 
-1. Zombie đi từ phải sang trái tới bức tường.
-2. Mèo đứng trong lưới 2×5 ô sau tường, tự bắn zombie gần nhất.
-3. Zombie chết rơi coin. Người chơi dùng coin để:
-   - mua một mèo cấp 1 vào ô trống;
-   - kéo hai mèo cùng cấp vào nhau để ra mèo cấp cao hơn;
-   - sửa tường;
-   - kích hoạt addon (chông, TNT, Cat Boxing, Cat Guardian), số lần dùng có hạn.
-4. Tường hết máu thì thua. Qua hết wave thì thắng.
+### Trong một level
+
+1. Sân có **5 hàng ngang**. Lưới đặt mèo có 2 ô mỗi hàng (hàng dưới cùng chỉ 1 ô, ô còn lại là thùng rác).
+2. **Mèo chỉ bắn quái đi trên hàng của nó.** Quái tới tường thì đập tường, bất kể hàng nào.
+3. Trước mỗi wave có 5 giây nghỉ. Trong lúc nghỉ, **dải đỏ nhấp nháy báo những hàng sắp có quái** (2 hàng ở wave đầu, thêm 1 hàng sau mỗi 2 wave, tối đa 5).
+4. Người chơi dùng coin để mua mèo cấp 1, kéo hai mèo cùng cấp vào nhau để ghép, **kéo mèo sang hàng đang bị ép**, sửa tường, hoặc dùng addon (chông, TNT, Cat Boxing, Cat Guardian).
+5. **Sau mỗi wave được hạ sạch, game tạm dừng và đưa ra 3 thẻ nâng cấp ngẫu nhiên, chọn 1.** Thẻ cộng dồn trong level.
+6. Tường hết máu thì thua. Qua hết wave thì thắng.
+
+### Thẻ nâng cấp (8 loại)
+
+| Thẻ | Tác dụng |
+|---|---|
+| Rapid Fire | Mèo bắn nhanh hơn 20% |
+| Sharp Claws | Sát thương đạn +25% |
+| Blast Rounds | Đạn lan 30% sát thương sang quái đứng gần |
+| Lucky Coins | Coin từ quái +30% |
+| Sticky Shots | Đạn làm chậm quái 20% (tối đa 70%, boss chịu một nửa) |
+| Thick Wall | Máu tối đa của tường +40 |
+| Restock | Mỗi addon thêm 1 lượt |
+| Stray Cat | Tặng một mèo cấp 2 (chỉ xuất hiện khi còn ô trống) |
+
+### Hành vi riêng của quái
+
+| Quái | Hành vi | Buộc người chơi làm gì |
+|---|---|---|
+| Reg 1 | Cơ bản | |
+| Reg 2, Reg 6 | Có giáp: mỗi phát đạn bị trừ một lượng sát thương cố định | Ghép lên mèo cấp cao thay vì dàn nhiều mèo cấp thấp |
+| Reg 3, Reg 5, Reg 7 | Chạy nhanh, giữa đường nhảy sang hàng bên cạnh | Giữ mèo ở hàng kề, phản ứng nhanh |
+| Reg 4, Reg 8 | Chết thì tách thành 2 con nhỏ hơn, một con sang hàng bên | Không dồn hết mèo vào một hàng |
+| Boss | Gọi 2 đàn em mỗi 7 giây; làm choáng mèo trên hàng của nó 2,5 giây mỗi 9 giây | Chia hoả lực, dùng addon đúng lúc |
+
+Quái có giáp được nhuộm màu xanh thép để phân biệt.
 
 ### Giữa các level
 
@@ -45,15 +70,21 @@ Ghép những chú mèo cầm súng thành mèo mạnh hơn và giữ bức tư�
 
 ## Game Pillars
 
-1. **Ghép là quyết định chính.** Mọi hệ thống phải làm cho việc kéo thả ghép mèo có ý nghĩa; không thêm thao tác cạnh tranh sự chú ý với nó.
-2. **Đọc được trong một cái nhìn.** Người chơi luôn thấy máu tường, wave hiện tại, số coin và cấp của từng mèo mà không cần mở menu.
-3. **Thua là lý do để nâng cấp, không phải bức tường trả tiền.** Level khó vượt được bằng chơi lại và nâng cấp bằng coin thường; gem chỉ rút ngắn thời gian.
+1. **Mỗi giây đều có việc để quyết định.** Xếp mèo theo hàng, ghép, chọn thẻ, dùng addon: người chơi không được ngồi nhìn.
+2. **Đọc được trong một cái nhìn.** Người chơi luôn thấy máu tường, wave hiện tại, số coin, cấp của từng mèo và hàng nào sắp có quái mà không cần mở menu.
+3. **Mỗi lượt chơi một khác.** Hàng có quái và thẻ nâng cấp là ngẫu nhiên, nên chơi lại cùng một level không diễn ra y hệt.
+4. **Thua là lý do để nâng cấp, không phải bức tường trả tiền.** Level khó vượt được bằng chơi lại và nâng cấp bằng coin thường; gem chỉ rút ngắn thời gian.
 
 ### Không phải là
 
-- Không phải game nhiều hàng kiểu lane defense: mèo không bị tấn công trực tiếp, chỉ bức tường có máu.
-- Không tăng tốc độ game theo thời gian; độ khó tăng bằng chỉ số và thành phần quái.
+- Mèo không bị tấn công trực tiếp: chỉ bức tường có máu (boss chỉ làm choáng mèo tạm thời).
+- Không tăng tốc độ game theo thời gian; độ khó tăng bằng chỉ số, thành phần và hành vi của quái.
 - Không có nhiều người chơi, không có cốt truyện.
+
+### Ý tưởng để dành (chưa làm)
+
+- Ba hệ mèo theo loại đạn (bắn đơn, làm chậm, nổ lan), mua ra hệ ngẫu nhiên. Chỉ làm nếu sau khi chơi thử ba cơ chế trên vẫn thấy thiếu.
+- Coin rơi phải chạm để nhặt, combo khi hạ nhiều quái liên tiếp.
 
 ## Nội dung có sẵn và phần thiếu
 
