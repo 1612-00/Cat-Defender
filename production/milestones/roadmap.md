@@ -58,7 +58,7 @@ Bản chơi được trọn vẹn (hết mốc 4): 50 giờ AI, khoảng 2 tuầ
 
 ---
 
-## Mốc 2: Nội dung (14 giờ AI, 2 giờ bạn) — XONG, thực tế 0,9 giờ AI
+## Mốc 2: Nội dung (14 giờ AI, 2 giờ bạn) — XONG, thực tế 0,35 giờ AI
 
 **Mục tiêu:** đưa toàn bộ nhân vật và cơ chế chiến đấu vào game.
 
@@ -206,5 +206,5 @@ Bản chơi được trọn vẹn (hết mốc 4): 50 giờ AI, khoảng 2 tuầ
 
 | Ngày | Mốc | Việc đã xong | Giờ AI thực tế | Ghi chú |
 |---|---|---|---|---|
-| 2026-11-10 | 2 | Toàn bộ 2.1–2.7 | 0,9 | Ước tính 14 giờ. Hệ số cộng dồn hai mốc ≈ 0,08. |
+| 2026-11-10 | 2 | Toàn bộ 2.1–2.7 | 0,35 | Ước tính 14 giờ. Đo theo đồng hồ giữa hai commit. Hệ số cộng dồn hai mốc ≈ 0,05. |
 | 2026-11-10 | 1 | Toàn bộ 1.1–1.7 | 0,7 | Ước tính 7 giờ; hệ số thực tế/ước tính ≈ 0,1. Điều khiển Editor qua Unity CLI chạy trơn. |
