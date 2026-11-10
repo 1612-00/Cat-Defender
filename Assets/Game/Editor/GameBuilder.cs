@@ -118,7 +118,7 @@ namespace CatDefender.EditorTools
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.backgroundColor = Color.black;
 
-            SpriteRenderer background = MakeRenderer("Background", null, LoadSprite($"{Kit}/Area/Area1.png"), unlit, -100, Color.white);
+            SpriteRenderer background = MakeRenderer("Background", null, AreaSprite(1), unlit, -100, Color.white);
 
             var wallGo = new GameObject("Wall");
             var wall = wallGo.AddComponent<Wall>();
@@ -136,13 +136,11 @@ namespace CatDefender.EditorTools
             var runner = gameGo.AddComponent<AddonRunner>();
             var board = new GameObject("Board").AddComponent<BoardView>();
 
-            // 9 ô đặt mèo; ô dưới cùng cột trái là thùng rác.
-            Vector2[] slots = SlotRows.SelectMany((y, row) => row == SlotRows.Length - 1
-                ? new[] { new Vector2(SlotColRight, y) }
-                : new[] { new Vector2(SlotColLeft, y), new Vector2(SlotColRight, y) }).ToArray();
+            // 10 ô đặt mèo: 5 hàng x 2 cột. Thùng rác nằm trên HUD, cạnh nút mua.
+            Vector2[] slots = SlotRows.SelectMany(y => new[] { new Vector2(SlotColLeft, y), new Vector2(SlotColRight, y) }).ToArray();
             int[] slotLanes = slots.Select(s => Array.IndexOf(SlotRows, s.y)).ToArray();
             Set(board, ("game", game), ("catPrefab", catPrefab), ("catsByLevel", cats), ("slots", slots),
-                ("slotLanes", slotLanes), ("trash", new Vector2(SlotColLeft, SlotRows[SlotRows.Length - 1])));
+                ("slotLanes", slotLanes));
 
             // Dải đỏ mờ trên từng hàng, bật trong lúc nghỉ để báo hàng sắp có quái.
             const float warnLeft = -2.4f, warnRight = 10.72f;
@@ -162,7 +160,7 @@ namespace CatDefender.EditorTools
                 ("enemyPrefab", enemyPrefab), ("bulletPrefab", bulletPrefab), ("fxPrefab", fxPrefab),
                 ("shootFx", LoadSprites($"{Kit}/ShootFx")), ("explosionFx", LoadSprites($"{Kit}/Explosion")));
 
-            BuildHud(game, addons);
+            BuildHud(game, board, addons);
 
             string scenePath = $"{Root}/Scenes/Gameplay.unity";
             EditorSceneManager.SaveScene(scene, scenePath);
@@ -328,7 +326,7 @@ namespace CatDefender.EditorTools
         {
             LevelData level = Asset($"{Root}/Data/Levels/Level{number:00}.asset", ScriptableObject.CreateInstance<LevelData>);
             int chapter = (number - 1) / 6;
-            level.background = LoadSprite($"{Kit}/Area/Area{chapter + 1}.png");
+            level.background = AreaSprite(chapter + 1);
             level.enemyHpScale = Mathf.Pow(1.10f, number - 1);
             level.rewardScale = Mathf.Pow(1.08f, number - 1);
             level.startCoins = Mathf.RoundToInt(30 * Mathf.Pow(1.08f, number - 1));
@@ -409,7 +407,7 @@ namespace CatDefender.EditorTools
 
         // ---------- HUD ----------
 
-        static void BuildHud(GameManager game, AddonData[] addons)
+        static void BuildHud(GameManager game, BoardView board, AddonData[] addons)
         {
             var canvasGo = new GameObject("Canvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
             canvasGo.GetComponent<Canvas>().renderMode = RenderMode.ScreenSpaceOverlay;
@@ -436,6 +434,17 @@ namespace CatDefender.EditorTools
             Text levelText = Label("Level", levelBox.transform, "", 30, Vector2.zero);
             Button prev = SmallButton("PrevLevel", root, top, new Vector2(-170, -72), "<");
             Button skip = SmallButton("SkipLevel", root, top, new Vector2(170, -72), ">");
+
+            // Thùng rác: kéo mèo thả vào đây để bỏ. Đặt bên trái nút mua.
+            var trash = new GameObject("Trash", typeof(Image)).GetComponent<Image>();
+            trash.transform.SetParent(root, false);
+            trash.sprite = EnsureSprite($"{Root}/Art/Trash.png", 256);
+            trash.raycastTarget = false;
+            trash.rectTransform.sizeDelta = new Vector2(120, 120);
+            trash.rectTransform.anchorMin = trash.rectTransform.anchorMax = bottomLeft;
+            trash.rectTransform.pivot = center;
+            trash.rectTransform.anchoredPosition = new Vector2(110, 111);
+            Set(board, ("trashIcon", trash.rectTransform));
 
             Button buy = Btn("BuyButton", root, "BtnGreen", bottomLeft, new Vector2(200, 50),
                 Strings.BuyCat, out Text buyCost);
@@ -602,6 +611,26 @@ namespace CatDefender.EditorTools
             var s = AssetDatabase.LoadAssetAtPath<Sprite>(path);
             if (s == null) throw new InvalidOperationException("Không tải được sprite (chạy Fix Sprite Imports trước): " + path);
             return s;
+        }
+
+        /// <summary>Nền đã vá (ô thùng rác cũ thành ô trống), sinh từ ảnh gốc của bộ asset vào Assets/Game/Art.</summary>
+        static Sprite AreaSprite(int number) => EnsureSprite($"{Root}/Art/Area{number}.png", 4096);
+
+        /// <summary>Đặt kiểu import sprite đơn cho một ảnh trong Assets/Game/Art rồi tải nó.</summary>
+        static Sprite EnsureSprite(string path, int maxSize)
+        {
+            var imp = (TextureImporter)AssetImporter.GetAtPath(path);
+            if (imp == null) throw new InvalidOperationException("Thiếu ảnh: " + path);
+            if (imp.textureType != TextureImporterType.Sprite || imp.spriteImportMode != SpriteImportMode.Single ||
+                imp.mipmapEnabled || imp.maxTextureSize != maxSize)
+            {
+                imp.textureType = TextureImporterType.Sprite;
+                imp.spriteImportMode = SpriteImportMode.Single;
+                imp.mipmapEnabled = false;
+                imp.maxTextureSize = maxSize;
+                imp.SaveAndReimport();
+            }
+            return LoadSprite(path);
         }
 
         static Sprite[] LoadSprites(string folder)

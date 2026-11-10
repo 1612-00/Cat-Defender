@@ -14,7 +14,8 @@ namespace CatDefender
         [SerializeField] Vector2[] slots;
         /// <summary>Hàng của từng ô, cùng thứ tự với <see cref="slots"/>.</summary>
         [SerializeField] int[] slotLanes;
-        [SerializeField] Vector2 trash;
+        /// <summary>Icon thùng rác trên HUD; thả mèo vào đây để bỏ.</summary>
+        [SerializeField] RectTransform trashIcon;
         [SerializeField] float slotRadius = 0.6f;
 
         MergeBoard board;
@@ -24,6 +25,9 @@ namespace CatDefender
         bool wasDown;
 
         public bool HasEmptySlot => board.FirstEmpty() >= 0;
+
+        /// <summary>Vị trí thùng rác trong thế giới. Canvas dạng overlay nên toạ độ của icon chính là pixel màn hình.</summary>
+        public Vector2 TrashWorld => cam.ScreenToWorldPoint(trashIcon.position);
 
         void Awake()
         {
@@ -104,7 +108,7 @@ namespace CatDefender
             dragFrom = -1;
             cats[from].GetComponent<SpriteRenderer>().sortingOrder = IdleOrder;
 
-            if (Vector2.Distance(world, trash) <= slotRadius)
+            if (Vector2.Distance(world, TrashWorld) <= slotRadius)
             {
                 board.Remove(from);
                 Destroy(cats[from].gameObject);

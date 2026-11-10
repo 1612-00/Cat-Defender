@@ -136,6 +136,16 @@ namespace CatDefender.Tests
             Assert.AreEqual(5, Picker.ActiveLaneCount(9, 5));
         }
 
+        // Lỗi đã gặp: quái ở hàng trên cùng (y khoảng 2,9) có thứ tự vẽ âm dưới -100 nên bị ảnh nền che mất.
+        [Test]
+        public void EnemySortOrder_IsAboveBackgroundForEveryLane_AndLowerOnScreenDrawsOnTop()
+        {
+            const int backgroundOrder = -100;
+            for (float y = -3.2f; y <= 3.2f; y += 0.1f)
+                Assert.Greater(Enemy.SortOrder(y), backgroundOrder, "y=" + y);
+            Assert.Greater(Enemy.SortOrder(-1f), Enemy.SortOrder(1f));
+        }
+
         static WaveRunner TwoWaves() => new WaveRunner(new List<IReadOnlyList<SpawnGroup>>
         {
             new List<SpawnGroup> { new SpawnGroup { enemyId = 0, count = 3, interval = 1f } },

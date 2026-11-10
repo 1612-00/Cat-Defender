@@ -56,7 +56,13 @@ namespace CatDefender
         /// <summary>Sát thương thực nhận sau khi trừ giáp.</summary>
         public int Mitigate(int damage) => Mathf.Max(1, damage - armor);
 
-        void Sort() => anim.Renderer.sortingOrder = 100 + (int)(-transform.position.y * 100);
+        /// <summary>
+        /// Thứ tự vẽ theo y: quái đứng thấp hơn trên màn hình được vẽ đè lên quái đứng cao hơn.
+        /// Luôn dương với mọi y trong sân, để không bao giờ chìm dưới ảnh nền (thứ tự -100).
+        /// </summary>
+        public static int SortOrder(float y) => 450 - Mathf.RoundToInt(y * 100);
+
+        void Sort() => anim.Renderer.sortingOrder = SortOrder(transform.position.y);
 
         void Update()
         {

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: da797fc5023a75543bdeb0b670242f9e, type: 3}
   m_Name: Level10
   m_EditorClassIdentifier: CatDefender::CatDefender.LevelData
-  background: {fileID: 21300000, guid: b8218b59f5dfc964a9d62abca83f4abe, type: 3}
+  background: {fileID: 21300000, guid: 0a2cc007b303fe541a5ad245d264efb8, type: 3}
   enemyHpScale: 2.357948
   rewardScale: 1.9990053
   startCoins: 60

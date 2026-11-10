@@ -229,6 +229,7 @@ Bản chơi được trọn vẹn (hết mốc 4): 50 giờ AI, khoảng 2 tuầ
 
 | Ngày | Mốc | Việc đã xong | Giờ AI thực tế | Ghi chú |
 |---|---|---|---|---|
+| 2026-11-10 | 2.5 (sửa lỗi) | Quái ở hàng trên cùng bị ảnh nền che (thứ tự vẽ âm) nên vô hình và level không kết thúc; thêm ô đặt mèo thứ 10; chuyển thùng rác xuống cạnh nút mua | 0,3 | Lỗi do chủ dự án phát hiện khi chơi thử. Có test hồi quy cho thứ tự vẽ. |
 | 2026-11-10 | 2.5 | Hàng ngang, thẻ nâng cấp, hành vi quái | dưới 1 | Mốc chèn thêm sau phản hồi chơi thử. |
 | 2026-11-10 | 2 | Toàn bộ 2.1–2.7 | 0,35 | Ước tính 14 giờ. Đo theo đồng hồ giữa hai commit. Hệ số cộng dồn hai mốc ≈ 0,05. |
 | 2026-11-10 | 1 | Toàn bộ 1.1–1.7 | 0,7 | Ước tính 7 giờ; hệ số thực tế/ước tính ≈ 0,1. Điều khiển Editor qua Unity CLI chạy trơn. |
