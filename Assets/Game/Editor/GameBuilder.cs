@@ -87,6 +87,7 @@ namespace CatDefender.EditorTools
             // Mở scene mới trước tiên: việc đổi scene giải phóng asset chưa được tham chiếu,
             // làm mọi asset tải trước đó thành null.
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            BuildAudioManager();
 
             Material unlit = Asset<Material>($"{Root}/Art/SpriteUnlit.mat",
                 () => new Material(Shader.Find("Universal Render Pipeline/2D/Sprite-Unlit-Default")));
@@ -119,6 +120,7 @@ namespace CatDefender.EditorTools
             cam.orthographicSize = 5.31f;
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.backgroundColor = Color.black;
+            camGo.AddComponent<AudioListener>();
 
             SpriteRenderer background = MakeRenderer("Background", null, AreaSprite(1), unlit, -100, Color.white);
 
@@ -460,7 +462,7 @@ namespace CatDefender.EditorTools
             Img("CoinIcon", coinBar.transform, "CoinIcon", new Vector2(0, 0.5f), new Vector2(-20, 0))
                 .rectTransform.pivot = Center;
 
-            Button pause = Img("PauseButton", root, "SettingBtn", TopRight, new Vector2(-50, -50)).gameObject.AddComponent<Button>();
+            Button pause = SoundButton(Img("PauseButton", root, "SettingBtn", TopRight, new Vector2(-50, -50)).gameObject.AddComponent<Button>(), AudioCue.Open);
             Image waveBar = Img("WaveBar", root, "WaveBar", TopRight, new Vector2(-190, -62));
             Text waveText = Label("Wave", waveBar.transform, "", 30, new Vector2(18, 0), "");
 
@@ -472,8 +474,8 @@ namespace CatDefender.EditorTools
             Image trash = Icon("Trash", root, EnsureSprite($"{Root}/Art/Trash.png", 256), 120, BottomLeft, new Vector2(110, 111));
             Set(board, ("trashIcon", trash.rectTransform));
 
-            Button buy = Btn("BuyButton", root, "BtnGreen", BottomLeft, new Vector2(200, 50), "buy_cat", out Text buyCost);
-            Button repair = Btn("RepairButton", root, "BtnOrange", BottomLeft, new Vector2(570, 50), "repair", out Text repairCost);
+            Button buy = Btn("BuyButton", root, "BtnGreen", BottomLeft, new Vector2(200, 50), "buy_cat", out Text buyCost, AudioCue.None);
+            Button repair = Btn("RepairButton", root, "BtnOrange", BottomLeft, new Vector2(570, 50), "repair", out Text repairCost, AudioCue.None);
 
             var addonButtons = new Button[addons.Length];
             var addonCounts = new Text[addons.Length];
@@ -490,7 +492,7 @@ namespace CatDefender.EditorTools
             GameObject win = ResultPanel("WinPanel", canvas, "WinPopUp", out Transform winRoot);
             Text winCoins = RewardRow("RewardCoins", winRoot, Ui("CoinIcon"), new Vector2(0, -10)).GetComponentInChildren<Text>();
             GameObject gemRow = RewardRow("RewardGems", winRoot, Ui("GemsIcon"), new Vector2(0, -90));
-            Button next = TextButton("NextLevelButton", winRoot, "BtnGreen", new Vector2(-190, -300), "next_level");
+            Button next = TextButton("NextLevelButton", winRoot, "BtnGreen", new Vector2(-190, -300), "next_level", cue: AudioCue.Confirm);
             Button winMenu = TextButton("MenuButton", winRoot, "BtnOrange", new Vector2(190, -300), "menu");
 
             GameObject lose = ResultPanel("LosePanel", canvas, "LosePopUp", out Transform loseRoot);
@@ -503,7 +505,7 @@ namespace CatDefender.EditorTools
             pauseTitle.anchoredPosition = new Vector2(0, 300);
             Label("Title", pauseTitle, "", 60, Vector2.zero, "paused");
             BuildSettings(pauseRoot, new Vector2(0, 60));
-            Button resume = TextButton("ResumeButton", pauseRoot, "BtnGreen", new Vector2(-380, -300), "resume");
+            Button resume = TextButton("ResumeButton", pauseRoot, "BtnGreen", new Vector2(-380, -300), "resume", cue: AudioCue.Close);
             Button pauseRetry = TextButton("RetryButton", pauseRoot, "BtnOrange", new Vector2(0, -300), "retry");
             Button pauseMenu = TextButton("MenuButton", pauseRoot, "BtnOrange", new Vector2(380, -300), "menu");
 
@@ -522,7 +524,7 @@ namespace CatDefender.EditorTools
                 Image card = Img("Card" + i, perkRoot, i == 1 ? "OrangeShopBox" : "BlueShopBox", Center,
                     new Vector2((i - 1) * 400, -40));
                 card.rectTransform.localScale = Vector3.one * 1.5f;
-                perkButtons[i] = card.gameObject.AddComponent<Button>();
+                perkButtons[i] = SoundButton(card.gameObject.AddComponent<Button>(), AudioCue.UpgradeConfirm);
                 perkTitles[i] = Label("Title", card.transform, "", 26, new Vector2(0, 148), "");
                 perkIcons[i] = Icon("Icon", card.transform, null, 110, Center, new Vector2(0, 40));
                 Text d = Label("Description", card.transform, "", 22, Vector2.zero, "");
@@ -613,19 +615,96 @@ namespace CatDefender.EditorTools
 
         /// <summary>Nút có tiêu đề ở trên và giá ở dưới.</summary>
         static Button Btn(string name, Transform parent, string sprite, Vector2 corner, Vector2 pos,
-            string titleKey, out Text cost)
+            string titleKey, out Text cost, AudioCue cue = AudioCue.UiClick)
         {
             Image img = Img(name, parent, sprite, corner, pos);
             Label("Title", img.transform, "", 38, new Vector2(0, 22), titleKey);
             cost = Label("Cost", img.transform, "", 36, new Vector2(0, -24));
-            return img.gameObject.AddComponent<Button>();
+            return SoundButton(img.gameObject.AddComponent<Button>(), cue);
         }
 
-        static Button TextButton(string name, Transform parent, string sprite, Vector2 pos, string key, int size = 44)
+        static Button TextButton(string name, Transform parent, string sprite, Vector2 pos, string key, int size = 44, AudioCue cue = AudioCue.UiClick)
         {
             Image img = Img(name, parent, sprite, Center, pos);
             Label("Title", img.transform, "", size, Vector2.zero, key);
-            return img.gameObject.AddComponent<Button>();
+            return SoundButton(img.gameObject.AddComponent<Button>(), cue);
+        }
+
+        static Button SoundButton(Button button, AudioCue cue)
+        {
+            AudioButton audioButton = button.gameObject.AddComponent<AudioButton>();
+            Set(audioButton, ("cue", cue));
+            return button;
+        }
+
+        static void BuildAudioManager()
+        {
+            AudioManager manager = new GameObject("AudioManager").AddComponent<AudioManager>();
+            (AudioCue cue, string path)[] mappings =
+            {
+                (AudioCue.UiClick, "UI_Interaction/click_001.ogg"),
+                (AudioCue.SelectCat, "UI_Interaction/select_001.ogg"),
+                (AudioCue.DropCat, "UI_Interaction/drop_001.ogg"),
+                (AudioCue.Open, "UI_Interaction/open_001.ogg"),
+                (AudioCue.Close, "UI_Interaction/close_001.ogg"),
+                (AudioCue.Error, "UI_Interaction/error_004.ogg"),
+                (AudioCue.Confirm, "UI_Interaction/confirmation_001.ogg"),
+                (AudioCue.Switch, "UI_Interaction/switch_002.ogg"),
+                (AudioCue.Tick, "UI_Interaction/tick_002.ogg"),
+                (AudioCue.CatShoot, "Combat/laserSmall_000.ogg"),
+                (AudioCue.CatShootAlternate, "Combat/laserSmall_001.ogg"),
+                (AudioCue.SpecialShot, "Combat/laserRetro_000.ogg"),
+                (AudioCue.HeavyShot, "Combat/laserLarge_000.ogg"),
+                (AudioCue.BulletHit, "Combat/impactSoft_medium_002.ogg"),
+                (AudioCue.BoxingHit, "Combat/impactSoft_heavy_000.ogg"),
+                (AudioCue.Explosion, "Combat/explosionCrunch_000.ogg"),
+                (AudioCue.BossExplosion, "Combat/lowFrequency_explosion_000.ogg"),
+                (AudioCue.EnemyHit, "Combat/impactSoft_heavy_000.ogg"),
+                (AudioCue.ArmorHit, "Combat/impactMetal_000.ogg"),
+                (AudioCue.Coin, "Economy_Upgrade/glass_001.ogg"),
+                (AudioCue.CoinAlternate, "Economy_Upgrade/pluck_001.ogg"),
+                (AudioCue.CatPurchase, "Economy_Upgrade/confirmation_001.ogg"),
+                (AudioCue.Upgrade, "Economy_Upgrade/maximize_005.ogg"),
+                (AudioCue.UpgradeConfirm, "Economy_Upgrade/confirmation_003.ogg"),
+                (AudioCue.Shield, "Economy_Upgrade/forceField_000.ogg"),
+                (AudioCue.Skill, "Economy_Upgrade/laserRetro_001.ogg"),
+                (AudioCue.WideExplosion, "Economy_Upgrade/explosionCrunch_002.ogg")
+            };
+            AudioCueClip[] entries = new AudioCueClip[mappings.Length];
+            for (int i = 0; i < mappings.Length; i++)
+            {
+                string path = $"{Root}/Audio/{mappings[i].path}";
+                AudioClip clip = AssetDatabase.LoadAssetAtPath<AudioClip>(path);
+                if (clip == null) throw new FileNotFoundException("Missing audio clip: " + path);
+                entries[i] = new AudioCueClip
+                {
+                    cue = mappings[i].cue,
+                    clip = clip,
+                    volume = AudioVolume(mappings[i].cue),
+                    minInterval = 0.06f
+                };
+            }
+            Set(manager, ("entries", entries));
+        }
+
+        static float AudioVolume(AudioCue cue)
+        {
+            switch (cue)
+            {
+                case AudioCue.CatShoot:
+                case AudioCue.CatShootAlternate: return 0.12f;
+                case AudioCue.SpecialShot:
+                case AudioCue.HeavyShot: return 0.18f;
+                case AudioCue.BulletHit:
+                case AudioCue.EnemyHit:
+                case AudioCue.ArmorHit:
+                case AudioCue.Coin:
+                case AudioCue.CoinAlternate: return 0.25f;
+                case AudioCue.Explosion:
+                case AudioCue.BossExplosion:
+                case AudioCue.WideExplosion: return 0.35f;
+                default: return 0.6f;
+            }
         }
 
         /// <summary>Lớp phủ tối toàn màn hình kèm một ảnh ở giữa (tên "Popup"); <paramref name="content"/> là nơi gắn nút.</summary>
@@ -665,13 +744,13 @@ namespace CatDefender.EditorTools
             {
                 Image img = Img(name, go.transform, sprite, Center, new Vector2(x, 60));
                 img.rectTransform.localScale = Vector3.one * 0.75f;
-                return img.gameObject.AddComponent<Button>();
+                return SoundButton(img.gameObject.AddComponent<Button>(), AudioCue.Switch);
             }
 
             Button music = Round("Music", "BtnMusic", -220);
             Button sound = Round("Sound", "BtnSound", 0);
             Button vibration = Round("Vibration", "BtnVibra", 220);
-            Button language = TextButton("Language", go.transform, "BtnGreen", new Vector2(0, -120), "language", 30);
+            Button language = TextButton("Language", go.transform, "BtnGreen", new Vector2(0, -120), "language", 30, AudioCue.Switch);
             language.GetComponent<RectTransform>().sizeDelta = new Vector2(520, 110);
 
             var panel = go.AddComponent<SettingsPanel>();
@@ -796,6 +875,18 @@ namespace CatDefender.EditorTools
                 if (p == null) throw new InvalidOperationException($"{target.GetType().Name} không có trường '{name}'");
                 switch (value)
                 {
+                    case AudioCue cue: p.intValue = (int)cue; break;
+                    case AudioCueClip[] entries:
+                        p.arraySize = entries.Length;
+                        for (int i = 0; i < entries.Length; i++)
+                        {
+                            SerializedProperty element = p.GetArrayElementAtIndex(i);
+                            element.FindPropertyRelative("cue").intValue = (int)entries[i].cue;
+                            element.FindPropertyRelative("clip").objectReferenceValue = entries[i].clip;
+                            element.FindPropertyRelative("volume").floatValue = entries[i].volume;
+                            element.FindPropertyRelative("minInterval").floatValue = entries[i].minInterval;
+                        }
+                        break;
                     case float f: p.floatValue = f; break;
                     case string str: p.stringValue = str; break;
                     case Vector2 v: p.vector2Value = v; break;

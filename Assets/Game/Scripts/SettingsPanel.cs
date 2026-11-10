@@ -12,7 +12,7 @@ namespace CatDefender
         void Start()
         {
             music.onClick.AddListener(() => Toggle(ref Profile.Data.music));
-            sound.onClick.AddListener(() => Toggle(ref Profile.Data.sound));
+            sound.onClick.AddListener(ToggleSound);
             vibration.onClick.AddListener(() => Toggle(ref Profile.Data.vibration));
             language.onClick.AddListener(Loc.ToggleLanguage);
         }
@@ -29,6 +29,13 @@ namespace CatDefender
         {
             flag = !flag;
             Profile.Save();
+        }
+
+        static void ToggleSound()
+        {
+            Profile.Data.sound = !Profile.Data.sound;
+            Profile.Save();
+            if (Profile.Data.sound) AudioManager.Play(AudioCue.Switch);
         }
 
         void Refresh()

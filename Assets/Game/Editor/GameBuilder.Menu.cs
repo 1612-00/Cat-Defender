@@ -16,6 +16,7 @@ namespace CatDefender.EditorTools
         static string BuildMenuScene()
         {
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            BuildAudioManager();
             var meta = AssetDatabase.LoadAssetAtPath<MetaConfig>(MetaPath);
             AddonData[] addons = new[] { "Spikes", "Tnt", "Boxing", "Guardian" }
                 .Select(n => AssetDatabase.LoadAssetAtPath<AddonData>($"{Root}/Data/Addons/{n}.asset")).ToArray();
@@ -25,6 +26,7 @@ namespace CatDefender.EditorTools
             cam.orthographic = true;
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.backgroundColor = Color.black;
+            camGo.AddComponent<AudioListener>();
 
             Transform canvas = MakeCanvas();
             var stage = new GameObject("Stage", typeof(RectTransform)).GetComponent<RectTransform>();
@@ -34,7 +36,7 @@ namespace CatDefender.EditorTools
             // --- Màn chào ---
             Image landing = StageImage("Landing", stage, "LandingScreen");
             landing.raycastTarget = true;
-            Button landingButton = landing.gameObject.AddComponent<Button>();
+            Button landingButton = SoundButton(landing.gameObject.AddComponent<Button>(), AudioCue.Open);
             landingButton.transition = Selectable.Transition.None;
             Img("Logo", landing.transform, "Logo", Center, new Vector2(0, 90)).raycastTarget = false;
             Label("TapToPlay", landing.transform, "", 60, new Vector2(0, -380), "tap_to_play");
@@ -49,8 +51,8 @@ namespace CatDefender.EditorTools
             Image gemBar = At(Img("GemBar", main.transform, "GemsBarBg", Center, Vector2.zero), 1750, 90);
             Text gemText = Label("Gems", gemBar.transform, "0", 38, new Vector2(18, 0));
             Icon("GemIcon", gemBar.transform, Ui("GemsIcon"), 60, Center, new Vector2(-115, 0));
-            Button settingsButton = At(Img("SettingsButton", main.transform, "SettingBtn", Center, Vector2.zero), 1940, 90)
-                .gameObject.AddComponent<Button>();
+            Button settingsButton = SoundButton(At(Img("SettingsButton", main.transform, "SettingBtn", Center, Vector2.zero), 1940, 90)
+                .gameObject.AddComponent<Button>(), AudioCue.Open);
 
             // Cột tab bên trái.
             string[] tabIcons = { "Icon_home", "Icon_Cat", "Icon_Addon", "Icon_Shop" };
@@ -60,7 +62,7 @@ namespace CatDefender.EditorTools
             {
                 Image tab = At(Img("Tab" + i, main.transform, "BtnTab_on", Center, Vector2.zero), 290, 290 + i * 172);
                 tab.rectTransform.sizeDelta = new Vector2(212, 152);
-                tabButtons[i] = tab.gameObject.AddComponent<Button>();
+                tabButtons[i] = SoundButton(tab.gameObject.AddComponent<Button>(), AudioCue.Switch);
                 Icon("Icon", tab.transform, Ui(tabIcons[i]), 80, Center, new Vector2(0, 18));
                 Label("Name", tab.transform, "", 26, new Vector2(0, -48), tabKeys[i]);
             }
@@ -83,7 +85,7 @@ namespace CatDefender.EditorTools
                 Image badge = Img("Level" + (i + 1), panels[0].transform, "LockedLevel", Center,
                     new Vector2(-520 + (i % 6) * 208, 252 - (i / 6) * 126));
                 badge.rectTransform.localScale = Vector3.one * 0.74f;
-                levelButtons[i] = badge.gameObject.AddComponent<Button>();
+                levelButtons[i] = SoundButton(badge.gameObject.AddComponent<Button>(), AudioCue.Confirm);
                 Label("Number", badge.transform, (i + 1).ToString(), 56, new Vector2(0, 12));
             }
 
@@ -102,7 +104,7 @@ namespace CatDefender.EditorTools
                 row.title = Label("Title", card.transform, "", 24, new Vector2(0, 148), "");
                 row.icon = Icon("Icon", card.transform, pack.icon, 150, Center, new Vector2(0, 30));
                 Image buy = Img("Buy", card.transform, "BtnShopYellow", Center, new Vector2(0, -115));
-                row.button = buy.gameObject.AddComponent<Button>();
+                row.button = SoundButton(buy.gameObject.AddComponent<Button>(), AudioCue.None);
                 row.costIcon = Icon("Gem", buy.transform, Ui("GemsIcon"), 44, Center, new Vector2(-34, 4));
                 row.cost = Label("Cost", buy.transform, "", 34, new Vector2(22, 4));
                 EditorUtility.SetDirty(row);
@@ -115,7 +117,7 @@ namespace CatDefender.EditorTools
             settingsTitle.anchoredPosition = new Vector2(0, 300);
             Label("Title", settingsTitle, "", 60, Vector2.zero, "settings");
             BuildSettings(settingsRoot, new Vector2(0, 60));
-            Button settingsClose = TextButton("CloseButton", settingsRoot, "BtnOrange", new Vector2(0, -300), "close");
+            Button settingsClose = TextButton("CloseButton", settingsRoot, "BtnOrange", new Vector2(0, -300), "close", cue: AudioCue.Close);
 
             var controller = canvas.gameObject.AddComponent<MenuController>();
             Set(controller, ("meta", meta), ("landing", landing.gameObject), ("main", main.gameObject),
@@ -170,7 +172,7 @@ namespace CatDefender.EditorTools
             row.pips.raycastTarget = false;
             Image buy = Img("Buy", box.transform, "BtnShopYellow", Center, new Vector2(500, 0));
             buy.rectTransform.localScale = Vector3.one * 1.3f;
-            row.button = buy.gameObject.AddComponent<Button>();
+            row.button = SoundButton(buy.gameObject.AddComponent<Button>(), AudioCue.None);
             row.costIcon = Icon("Coin", buy.transform, Ui("CoinIcon"), 40, Center, new Vector2(-42, 4));
             row.cost = Label("Cost", buy.transform, "", 30, new Vector2(16, 4), "");
             EditorUtility.SetDirty(row);

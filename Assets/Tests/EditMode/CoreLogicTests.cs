@@ -83,9 +83,12 @@ namespace CatDefender.Tests
             var r = TwoWaves();
             var spawns = new List<int>();
             Assert.IsTrue(r.Resting);
+            Assert.AreEqual(1f, r.TimeUntilNextWave, 0.001f);
             r.Tick(0.5f, 5, spawns);
+            Assert.AreEqual(0.5f, r.TimeUntilNextWave, 0.001f);
             Assert.IsEmpty(spawns);
             r.Tick(0.6f, 5, spawns);
+            Assert.AreEqual(0f, r.TimeUntilNextWave);
             Assert.AreEqual(1, spawns.Count);
             Assert.IsFalse(r.Resting);
         }

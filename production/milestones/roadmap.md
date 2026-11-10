@@ -168,7 +168,7 @@ Bản chơi được trọn vẹn (hết mốc 4): 50 giờ AI, khoảng 2 tuầ
 
 | # | Đầu việc | Ước tính | Thực tế |
 |---|---|---|---|
-| 4.1 | Hệ thống âm thanh với điểm gắn cho mọi sự kiện; clip để trống tới khi chủ dự án thêm file | 2 | |
+| 4.1 | Hệ thống âm thanh với điểm gắn cho mọi sự kiện, dùng các clip đã cung cấp | 2 | ~0,3 (ước tính) |
 | 4.2 | Cảm giác chơi: rung màn hình, số sát thương bay, hiệu ứng ghép, chuyển động UI | 2 | |
 | 4.3 | Hướng dẫn chơi ở level 1–3 | 2,5 | |
 | 4.4 | Tối ưu: sprite atlas, pool đối tượng, giảm dung lượng texture, đo khung hình | 2,5 | |
@@ -179,7 +179,7 @@ Bản chơi được trọn vẹn (hết mốc 4): 50 giờ AI, khoảng 2 tuầ
 - Người chơi mới qua được 3 level đầu mà không cần giải thích ngoài game.
 - Bản build Android chạy ổn định trên máy thử của bạn ở wave đông quái nhất.
 
-**Việc của bạn:** chọn và cung cấp file âm thanh, nhạc (khoảng 2 giờ); cài bản build lên điện thoại và chơi thử (1 giờ).
+**Việc của bạn:** chọn và cung cấp nhạc nền (âm thanh hiệu ứng đã được tích hợp); cài bản build lên điện thoại và chơi thử (1 giờ).
 
 **Phụ thuộc bên ngoài:** nguồn âm thanh có giấy phép thương mại.
 
@@ -254,3 +254,4 @@ Bản chơi được trọn vẹn (hết mốc 4): 50 giờ AI, khoảng 2 tuầ
 | 2026-11-10 | 2.5 | Hàng ngang, thẻ nâng cấp, hành vi quái | dưới 1 | Mốc chèn thêm sau phản hồi chơi thử. |
 | 2026-11-10 | 2 | Toàn bộ 2.1–2.7 | 0,35 | Ước tính 14 giờ. Đo theo đồng hồ giữa hai commit. Hệ số cộng dồn hai mốc ≈ 0,05. |
 | 2026-11-10 | 1 | Toàn bộ 1.1–1.7 | 0,7 | Ước tính 7 giờ; hệ số thực tế/ước tính ≈ 0,1. Điều khiển Editor qua Unity CLI chạy trơn. |
+| 2026-11-11 | 4 | 4.1: AudioManager dùng chung, SFX cho UI, combat, coin, addon và perk; dựng lại hai scene | ~0,3 (ước tính) | 26/26 EditMode tests qua; cần nghe thử trên thiết bị để xác nhận mix và mức âm lượng. |

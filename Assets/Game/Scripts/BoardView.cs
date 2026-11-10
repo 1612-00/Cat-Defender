@@ -93,6 +93,7 @@ namespace CatDefender
             if (slot < 0 || cats[slot] == null) return;
             dragFrom = slot;
             cats[slot].GetComponent<SpriteRenderer>().sortingOrder = DragOrder;
+            AudioManager.Play(AudioCue.SelectCat);
         }
 
         public void Drag(Vector2 world)
@@ -113,11 +114,13 @@ namespace CatDefender
                 board.Remove(from);
                 Destroy(cats[from].gameObject);
                 cats[from] = null;
+                AudioManager.Play(AudioCue.DropCat);
                 return;
             }
 
             int to = SlotAt(world);
             MoveResult result = to < 0 ? MoveResult.None : board.Move(from, to);
+            if (result != MoveResult.None) AudioManager.Play(AudioCue.DropCat);
             switch (result)
             {
                 case MoveResult.Moved:

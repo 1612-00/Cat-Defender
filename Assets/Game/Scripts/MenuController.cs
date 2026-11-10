@@ -100,9 +100,15 @@ namespace CatDefender
             SaveData d = Profile.Data;
             int level = d.upgradeLevels[i];
             int cost = meta.UpgradeCost(i, level);
-            if (level >= meta.maxLevel || d.coins < cost) return;
+            if (level >= meta.maxLevel) return;
+            if (d.coins < cost)
+            {
+                AudioManager.Play(AudioCue.Error);
+                return;
+            }
             d.coins -= cost;
             d.upgradeLevels[i]++;
+            AudioManager.Play(AudioCue.Upgrade);
             Profile.Save();
         }
 
@@ -111,9 +117,15 @@ namespace CatDefender
             SaveData d = Profile.Data;
             int level = d.addonLevels[i];
             int cost = meta.AddonCost(level);
-            if (level >= meta.maxLevel || d.coins < cost) return;
+            if (level >= meta.maxLevel) return;
+            if (d.coins < cost)
+            {
+                AudioManager.Play(AudioCue.Error);
+                return;
+            }
             d.coins -= cost;
             d.addonLevels[i]++;
+            AudioManager.Play(AudioCue.Upgrade);
             Profile.Save();
         }
 
@@ -121,9 +133,14 @@ namespace CatDefender
         {
             SaveData d = Profile.Data;
             MetaConfig.CoinPack pack = meta.packs[i];
-            if (d.gems < pack.gems) return;
+            if (d.gems < pack.gems)
+            {
+                AudioManager.Play(AudioCue.Error);
+                return;
+            }
             d.gems -= pack.gems;
             d.coins += pack.coins;
+            AudioManager.Play(AudioCue.Confirm);
             Profile.Save();
         }
 
@@ -157,7 +174,8 @@ namespace CatDefender
                 MetaConfig.CoinPack pack = meta.packs[i];
                 packRows[i].title.text = Loc.T("pack_coins", pack.coins);
                 packRows[i].cost.text = pack.gems.ToString();
-                packRows[i].button.interactable = d.gems >= pack.gems;
+                packRows[i].button.interactable = true;
+                SetAffordabilityColor(packRows[i].button, d.gems >= pack.gems);
             }
         }
 
@@ -167,7 +185,18 @@ namespace CatDefender
             row.pips.sprite = pipSprites[Mathf.Clamp(level, 0, pipSprites.Length - 1)];
             row.cost.text = maxed ? Loc.T("max") : cost.ToString();
             row.costIcon.gameObject.SetActive(!maxed);
-            row.button.interactable = !maxed && coins >= cost;
+            row.button.interactable = !maxed;
+            SetAffordabilityColor(row.button, coins >= cost);
+        }
+
+        static void SetAffordabilityColor(Button button, bool affordable)
+        {
+            ColorBlock colors = button.colors;
+            Color tint = affordable ? Color.white : new Color(0.65f, 0.65f, 0.65f);
+            colors.normalColor = tint;
+            colors.highlightedColor = tint;
+            colors.selectedColor = tint;
+            button.colors = colors;
         }
     }
 }

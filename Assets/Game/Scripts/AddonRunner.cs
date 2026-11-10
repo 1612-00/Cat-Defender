@@ -73,7 +73,10 @@ namespace CatDefender
                 {
                     Enemy front = game.FrontEnemy();
                     if (front != null && front.transform.position.x <= x1)
+                    {
                         helper.transform.position = new Vector3(game.WallX + 0.7f, front.transform.position.y, 0);
+                        AudioManager.Play(AudioCue.BoxingHit);
+                    }
                     DamageWhere(damage, e => e.transform.position.x <= x1);
                 }
                 yield return new WaitForSeconds(addon.tickInterval);

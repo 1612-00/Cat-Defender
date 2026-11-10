@@ -76,8 +76,10 @@ namespace CatDefender
             levelText.text = Loc.T("level", game.LevelNumber);
             buyCostText.text = game.CatCost.ToString();
             repairCostText.text = game.RepairCost.ToString();
-            buyButton.interactable = game.CanBuyCat && !game.Paused;
-            repairButton.interactable = game.CanRepair && !game.Paused;
+            buyButton.interactable = game.CanAttemptBuyCat && !game.Paused;
+            SetAffordabilityColor(buyButton, game.Wallet.Coins >= game.CatCost);
+            repairButton.interactable = game.State == GameState.Playing && game.Wall.Hp < game.Wall.MaxHp && !game.Paused;
+            SetAffordabilityColor(repairButton, game.Wallet.Coins >= game.RepairCost);
             pauseButton.interactable = playing && game.PerkChoices == null;
             for (int i = 0; i < addonButtons.Length; i++)
             {
@@ -105,6 +107,16 @@ namespace CatDefender
                 perkTitles[i].text = Loc.T(choices[i].titleKey);
                 perkDescriptions[i].text = Loc.T(choices[i].descKey);
             }
+        }
+
+        static void SetAffordabilityColor(Button button, bool affordable)
+        {
+            ColorBlock colors = button.colors;
+            Color tint = affordable ? Color.white : new Color(0.65f, 0.65f, 0.65f);
+            colors.normalColor = tint;
+            colors.highlightedColor = tint;
+            colors.selectedColor = tint;
+            button.colors = colors;
         }
     }
 }

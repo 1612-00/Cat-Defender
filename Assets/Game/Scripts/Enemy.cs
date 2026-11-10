@@ -25,7 +25,12 @@ namespace CatDefender
         float switchAtX = float.MinValue, switchFromY, switchT = 1f;
         float summonTimer, stunTimer;
 
+        /// <summary>Quái còn máu và chưa bị hạ.</summary>
         public bool Alive => hp > 0;
+        /// <summary>Quái có giáp, dùng để chọn hiệu ứng âm thanh trúng đòn.</summary>
+        public bool IsArmored => armor > 0;
+        /// <summary>Cho biết đây là boss.</summary>
+        public bool IsBoss => data != null && data.isBoss;
         public int Lane { get; private set; }
 
         /// <summary>Tổng sát thương (đã trừ giáp) của các viên đạn đang bay tới quái này.</summary>

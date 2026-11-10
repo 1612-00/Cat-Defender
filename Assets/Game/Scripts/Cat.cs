@@ -52,6 +52,7 @@ namespace CatDefender
             cooldown = game.Perks.FireInterval(data.fireInterval);
             anim.Play(data.shoot, false, () => anim.Play(data.idle, true));
             game.SpawnBullet(transform.position + Muzzle, target, data);
+            AudioManager.PlayCatShot(data.level);
         }
     }
 }

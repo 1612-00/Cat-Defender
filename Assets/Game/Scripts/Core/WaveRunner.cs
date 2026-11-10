@@ -35,6 +35,8 @@ namespace CatDefender
         public bool AllSpawned => wave >= waves.Count;
         /// <summary>Đang nghỉ trước một wave (kể cả trước wave đầu tiên).</summary>
         public bool Resting => resting && !AllSpawned;
+        /// <summary>Số giây còn lại trước khi wave kế tiếp bắt đầu, hoặc 0 nếu không nghỉ.</summary>
+        public float TimeUntilNextWave => Resting && timer > 0 ? timer : 0;
 
         /// <summary>Thêm vào <paramref name="spawns"/> id các quái cần sinh trong khung hình này.</summary>
         public void Tick(float dt, int aliveEnemies, List<int> spawns)

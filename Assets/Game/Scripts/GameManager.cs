@@ -46,7 +46,7 @@ namespace CatDefender
         LevelData level;
         WaveRunner waves;
         int[] addonUsesLeft;
-        int catsBought, preparedWave;
+        int catsBought, preparedWave, lastCountdownSecond;
 
         public GameState State { get; private set; }
         public Wallet Wallet { get; private set; }
@@ -74,6 +74,7 @@ namespace CatDefender
         public int WaveCount => waves.WaveCount;
         public int CatCost => Economy.CatCost(level.catBaseCost, level.catCostGrowth, catsBought);
         public int RepairCost => level.repairCost;
+        public bool CanAttemptBuyCat => State == GameState.Playing && board.HasEmptySlot;
         public bool CanBuyCat => State == GameState.Playing && board.HasEmptySlot && Wallet.Coins >= CatCost;
         public bool CanRepair => State == GameState.Playing && wall.Hp < wall.MaxHp && Wallet.Coins >= RepairCost;
 
@@ -141,6 +142,13 @@ namespace CatDefender
             }
             // Chỉ báo khi đã chọn xong hàng cho wave kế tiếp (sân sạch), không báo hàng của wave cũ.
             ShowLaneWarnings(waves.Resting && preparedWave == waves.CurrentWave);
+            int countdownSecond = Mathf.CeilToInt(waves.TimeUntilNextWave);
+            if (!Paused && enemies.Count == 0 && countdownSecond > 0 && countdownSecond != lastCountdownSecond)
+            {
+                lastCountdownSecond = countdownSecond;
+                AudioManager.Play(AudioCue.Tick);
+            }
+            if (!waves.Resting) lastCountdownSecond = 0;
 
             int waveBefore = waves.CurrentWave;
             spawnBuffer.Clear();
@@ -225,10 +233,12 @@ namespace CatDefender
         public void OnBulletHit(Enemy target, int damage)
         {
             Vector3 at = target.transform.position;
+            AudioManager.Play(target.IsArmored ? AudioCue.ArmorHit : AudioCue.BulletHit);
             if (Perks.SlowFraction > 0) target.ApplySlow(Perks.SlowFraction, slowSeconds);
             target.TakeDamage(damage);
 
             if (Perks.SplashFraction <= 0) return;
+            AudioManager.Play(AudioCue.Explosion);
             int splash = Mathf.Max(1, Mathf.RoundToInt(damage * Perks.SplashFraction));
             // Sao chép trước: TakeDamage có thể xoá quái khỏi danh sách đang duyệt.
             splashBuffer.Clear();
@@ -253,6 +263,8 @@ namespace CatDefender
         {
             enemies.Remove(enemy);
             Wallet.Add(Perks.Coins(reward));
+            AudioManager.Play(enemy.IsBoss ? AudioCue.BossExplosion : AudioCue.EnemyHit);
+            AudioManager.PlayCoin();
         }
 
         public void DamageWall(int amount)
@@ -266,22 +278,35 @@ namespace CatDefender
 
         public void BuyCat()
         {
-            if (!CanBuyCat || !Wallet.TrySpend(CatCost)) return;
+            if (!CanBuyCat || !Wallet.TrySpend(CatCost))
+            {
+                if (State == GameState.Playing && board.HasEmptySlot && Wallet.Coins < CatCost)
+                    AudioManager.Play(AudioCue.Error);
+                return;
+            }
             board.AddCat(1);
             catsBought++;
+            AudioManager.Play(AudioCue.CatPurchase);
             Changed?.Invoke();
         }
 
         public void RepairWall()
         {
-            if (!CanRepair || !Wallet.TrySpend(RepairCost)) return;
+            if (!CanRepair || !Wallet.TrySpend(RepairCost))
+            {
+                if (State == GameState.Playing && wall.Hp < wall.MaxHp && Wallet.Coins < RepairCost)
+                    AudioManager.Play(AudioCue.Error);
+                return;
+            }
             wall.Repair(level.repairAmount);
+            AudioManager.Play(AudioCue.Confirm);
         }
 
         public void UseAddon(int i)
         {
             if (!CanUseAddon(i)) return;
             addonUsesLeft[i]--;
+            AudioManager.PlayAddon(addons[i].type);
             addonRunner.Run(addons[i], meta.AddonScale(Profile.Data.addonLevels[i]));
             Changed?.Invoke();
         }
