@@ -109,6 +109,75 @@ namespace CatDefender.Tests
                 entry.Groups[1].Value);
         }
 
+        [Test]
+        public void NewAudioCues_UseTheClipsSpecifiedInAudioNotes()
+        {
+            // Arrange
+            var expectedClips = new Dictionary<AudioCue, string>
+            {
+            { AudioCue.Merge, "Assets/Game/Audio/UI_Interaction/merge-cat.wav" },
+            { AudioCue.LevelComplete, "Assets/Game/Audio/UI_Interaction/game-level-completed.wav" },
+            { AudioCue.GameOver, "Assets/Game/Audio/UI_Interaction/musical-game-over.wav" },
+            { AudioCue.WaveStart, "Assets/Game/Audio/UI_Interaction/classic-alarm.wav" },
+            { AudioCue.BossAppear, "Assets/Game/Audio/UI_Interaction/giant-monster-footstep.wav" },
+            { AudioCue.PerkOffer, "Assets/Game/Audio/UI_Interaction/happy-bell-alert.wav" },
+            { AudioCue.CatTrash, "Assets/Game/Audio/UI_Interaction/money-bag-drop.wav" },
+            { AudioCue.WallHit, "Assets/Game/Audio/Combat/impactWood_heavy_004.ogg" },
+            { AudioCue.WallCritical, "Assets/Game/Audio/Combat/facility-alarm.wav" },
+            { AudioCue.BossStun, "Assets/Game/Audio/Combat/impactPlate_heavy_004.ogg" },
+            { AudioCue.EnemySplit, "Assets/Game/Audio/Combat/long-pop.wav" },
+            { AudioCue.BoxingActivate, "Assets/Game/Audio/Economy_Upgrade/confirmation_001.ogg" }
+            };
+
+            // Act / Assert
+            foreach (string scenePath in new[] { "Assets/Game/Scenes/Menu.unity", "Assets/Game/Scenes/Gameplay.unity" })
+            {
+            string yaml = File.ReadAllText(scenePath);
+            string audioManager = ComponentBlock(yaml, "CatDefender.AudioManager");
+            foreach (KeyValuePair<AudioCue, string> expected in expectedClips)
+            {
+                Match entry = Regex.Match(audioManager,
+                    $@"-\s+cue:\s*{(int)expected.Key}\s*\r?\n\s+clip:\s*\{{fileID:\s*[1-9]\d*,\s*guid:\s*([a-f0-9]+)");
+                Assert.IsTrue(entry.Success, $"{expected.Key} has no clip in {scenePath}");
+                Assert.AreEqual(AssetDatabase.AssetPathToGUID(expected.Value), entry.Groups[1].Value,
+                    $"{expected.Key} clip in {scenePath}");
+            }
+            }
+        }
+
+        [Test]
+        public void CombatAndAlertCues_HaveReducedVolumesAndSpamLimits()
+        {
+            // Arrange
+            string yaml = File.ReadAllText("Assets/Game/Scenes/Gameplay.unity");
+            string audioManager = ComponentBlock(yaml, "CatDefender.AudioManager");
+
+            // Act
+            MatchEntry(AudioCue.CatShoot, out float shotVolume, out float shotInterval);
+            MatchEntry(AudioCue.Coin, out float coinVolume, out float coinInterval);
+            MatchEntry(AudioCue.WallHit, out float wallVolume, out float wallInterval);
+            MatchEntry(AudioCue.BossStun, out float stunVolume, out float stunInterval);
+
+            // Assert
+            Assert.That(shotVolume, Is.EqualTo(0.10f).Within(0.001f));
+            Assert.That(shotInterval, Is.EqualTo(0.10f).Within(0.001f));
+            Assert.That(coinVolume, Is.EqualTo(0.12f).Within(0.001f));
+            Assert.That(coinInterval, Is.EqualTo(0.08f).Within(0.001f));
+            Assert.That(wallVolume, Is.EqualTo(0.20f).Within(0.001f));
+            Assert.That(wallInterval, Is.EqualTo(0.25f).Within(0.001f));
+            Assert.That(stunVolume, Is.EqualTo(0.26f).Within(0.001f));
+            Assert.That(stunInterval, Is.EqualTo(1f).Within(0.001f));
+
+            void MatchEntry(AudioCue cue, out float volume, out float interval)
+            {
+            Match entry = Regex.Match(audioManager,
+                $@"-\s+cue:\s*{(int)cue}\s*\r?\n\s+clip:\s*\{{[^\r\n]+\r?\n\s+volume:\s*([0-9.]+)\r?\n\s+minInterval:\s*([0-9.]+)");
+            Assert.IsTrue(entry.Success, $"{cue} missing from Gameplay audio manager");
+            volume = float.Parse(entry.Groups[1].Value, CultureInfo.InvariantCulture);
+            interval = float.Parse(entry.Groups[2].Value, CultureInfo.InvariantCulture);
+            }
+        }
+
         static string ComponentBlock(string yaml, string className) =>
             Regex.Split(yaml, @"(?=--- !u!\d+ &\d+)")
                 .Single(block => block.Contains("m_EditorClassIdentifier: CatDefender::" + className));

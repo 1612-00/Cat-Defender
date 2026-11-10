@@ -150,9 +150,11 @@ namespace CatDefender
             }
             if (!waves.Resting) lastCountdownSecond = 0;
 
+            bool wasResting = waves.Resting;
             int waveBefore = waves.CurrentWave;
             spawnBuffer.Clear();
             waves.Tick(Time.deltaTime, enemies.Count, spawnBuffer);
+            if (wasResting && !waves.Resting) AudioManager.Play(AudioCue.WaveStart);
             for (int i = 0; i < spawnBuffer.Count; i++)
                 SpawnEnemyAt(enemyTypes[spawnBuffer[i]], spawnX, RandomLane());
             if (waves.CurrentWave != waveBefore) Changed?.Invoke();
@@ -185,7 +187,7 @@ namespace CatDefender
             return lane + (rng.Next(2) == 0 ? -1 : 1);
         }
 
-        public void StunLane(int lane, float seconds) => board.StunLane(lane, seconds);
+        public bool StunLane(int lane, float seconds) => board.StunLane(lane, seconds);
 
         // ---------- Quái và đạn ----------
 
@@ -195,6 +197,7 @@ namespace CatDefender
             Enemy e = Instantiate(enemyPrefab, pos, Quaternion.identity);
             e.Init(data, this, lane, level.enemyHpScale, level.rewardScale);
             enemies.Add(e);
+            if (data.isBoss) AudioManager.Play(AudioCue.BossAppear);
         }
 
         /// <summary>
@@ -270,7 +273,11 @@ namespace CatDefender
         public void DamageWall(int amount)
         {
             if (WallShields > 0) return;
+            int hpBeforeHit = wall.Hp;
             wall.Damage(amount);
+            if (hpBeforeHit > wall.MaxHp * 0.25f && wall.Hp <= wall.MaxHp * 0.25f && wall.Hp > 0)
+                AudioManager.Play(AudioCue.WallCritical);
+            AudioManager.Play(AudioCue.WallHit);
             if (wall.Hp <= 0) End(GameState.Lost);
         }
 
@@ -324,6 +331,7 @@ namespace CatDefender
             PerkChoices = new PerkData[picks.Count];
             for (int i = 0; i < picks.Count; i++) PerkChoices[i] = pool[picks[i]];
             UpdateTimeScale();
+            AudioManager.Play(AudioCue.PerkOffer);
             Changed?.Invoke();
         }
 
@@ -387,6 +395,7 @@ namespace CatDefender
             Time.timeScale = 1f;
             ShowLaneWarnings(false);
             GrantRewards(result == GameState.Won);
+            AudioManager.Play(result == GameState.Won ? AudioCue.LevelComplete : AudioCue.GameOver);
             Changed?.Invoke();
         }
 

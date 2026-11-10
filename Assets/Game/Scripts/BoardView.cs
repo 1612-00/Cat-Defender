@@ -45,10 +45,16 @@ namespace CatDefender
             return true;
         }
 
-        public void StunLane(int lane, float seconds)
+        public bool StunLane(int lane, float seconds)
         {
+            bool stunned = false;
             for (int i = 0; i < cats.Length; i++)
-                if (cats[i] != null && slotLanes[i] == lane) cats[i].Stun(seconds);
+            {
+                if (cats[i] == null || slotLanes[i] != lane) continue;
+                cats[i].Stun(seconds);
+                stunned = true;
+            }
+            return stunned;
         }
 
         void Spawn(int slot)
@@ -114,13 +120,14 @@ namespace CatDefender
                 board.Remove(from);
                 Destroy(cats[from].gameObject);
                 cats[from] = null;
-                AudioManager.Play(AudioCue.DropCat);
+                AudioManager.Play(AudioCue.CatTrash);
                 return;
             }
 
             int to = SlotAt(world);
             MoveResult result = to < 0 ? MoveResult.None : board.Move(from, to);
-            if (result != MoveResult.None) AudioManager.Play(AudioCue.DropCat);
+            if (result == MoveResult.Merged) AudioManager.Play(AudioCue.Merge);
+            else if (result != MoveResult.None) AudioManager.Play(AudioCue.DropCat);
             switch (result)
             {
                 case MoveResult.Moved:

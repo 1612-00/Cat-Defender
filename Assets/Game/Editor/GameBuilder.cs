@@ -668,7 +668,19 @@ namespace CatDefender.EditorTools
                 (AudioCue.UpgradeConfirm, "Economy_Upgrade/confirmation_003.ogg"),
                 (AudioCue.Shield, "Economy_Upgrade/forceField_000.ogg"),
                 (AudioCue.Skill, "Economy_Upgrade/laserRetro_001.ogg"),
-                (AudioCue.WideExplosion, "Economy_Upgrade/explosionCrunch_002.ogg")
+                (AudioCue.WideExplosion, "Economy_Upgrade/explosionCrunch_002.ogg"),
+                (AudioCue.Merge, "UI_Interaction/merge-cat.wav"),
+                (AudioCue.LevelComplete, "UI_Interaction/game-level-completed.wav"),
+                (AudioCue.GameOver, "UI_Interaction/musical-game-over.wav"),
+                (AudioCue.WaveStart, "UI_Interaction/classic-alarm.wav"),
+                (AudioCue.BossAppear, "UI_Interaction/giant-monster-footstep.wav"),
+                (AudioCue.PerkOffer, "UI_Interaction/happy-bell-alert.wav"),
+                (AudioCue.CatTrash, "UI_Interaction/money-bag-drop.wav"),
+                (AudioCue.WallHit, "Combat/impactWood_heavy_004.ogg"),
+                (AudioCue.WallCritical, "Combat/facility-alarm.wav"),
+                (AudioCue.BossStun, "Combat/impactPlate_heavy_004.ogg"),
+                (AudioCue.EnemySplit, "Combat/long-pop.wav"),
+                (AudioCue.BoxingActivate, "Economy_Upgrade/confirmation_001.ogg")
             };
             AudioCueClip[] entries = new AudioCueClip[mappings.Length];
             for (int i = 0; i < mappings.Length; i++)
@@ -681,7 +693,7 @@ namespace CatDefender.EditorTools
                     cue = mappings[i].cue,
                     clip = clip,
                     volume = AudioVolume(mappings[i].cue),
-                    minInterval = 0.06f
+                    minInterval = AudioMinInterval(mappings[i].cue)
                 };
             }
             Set(manager, ("entries", entries));
@@ -691,19 +703,69 @@ namespace CatDefender.EditorTools
         {
             switch (cue)
             {
+                case AudioCue.UiClick:
+                case AudioCue.Switch:
+                case AudioCue.SelectCat:
+                case AudioCue.DropCat:
+                case AudioCue.Tick: return 0.18f;
+                case AudioCue.Open:
+                case AudioCue.Close:
+                case AudioCue.Error:
+                case AudioCue.Confirm: return 0.30f;
                 case AudioCue.CatShoot:
-                case AudioCue.CatShootAlternate: return 0.12f;
+                case AudioCue.CatShootAlternate: return 0.10f;
                 case AudioCue.SpecialShot:
-                case AudioCue.HeavyShot: return 0.18f;
+                case AudioCue.HeavyShot: return 0.14f;
+                case AudioCue.BulletHit:
+                case AudioCue.EnemyHit:
+                case AudioCue.ArmorHit: return 0.16f;
+                case AudioCue.Coin:
+                case AudioCue.CoinAlternate: return 0.12f;
+                case AudioCue.CatPurchase:
+                case AudioCue.Upgrade:
+                case AudioCue.UpgradeConfirm:
+                case AudioCue.BoxingActivate: return 0.32f;
+                case AudioCue.BoxingHit:
+                case AudioCue.WallHit: return 0.20f;
+                case AudioCue.Explosion:
+                case AudioCue.WideExplosion: return 0.28f;
+                case AudioCue.BossExplosion:
+                case AudioCue.BossAppear:
+                case AudioCue.LevelComplete:
+                case AudioCue.GameOver:
+                case AudioCue.WaveStart:
+                case AudioCue.WallCritical: return 0.34f;
+                case AudioCue.Shield:
+                case AudioCue.Skill:
+                case AudioCue.Merge:
+                case AudioCue.PerkOffer:
+                case AudioCue.CatTrash:
+                case AudioCue.BossStun:
+                case AudioCue.EnemySplit: return 0.26f;
+                default: return 0.25f;
+            }
+        }
+
+        static float AudioMinInterval(AudioCue cue)
+        {
+            switch (cue)
+            {
+                case AudioCue.CatShoot:
+                case AudioCue.CatShootAlternate:
+                case AudioCue.SpecialShot:
+                case AudioCue.HeavyShot: return 0.10f;
                 case AudioCue.BulletHit:
                 case AudioCue.EnemyHit:
                 case AudioCue.ArmorHit:
                 case AudioCue.Coin:
-                case AudioCue.CoinAlternate: return 0.25f;
+                case AudioCue.CoinAlternate:
                 case AudioCue.Explosion:
-                case AudioCue.BossExplosion:
-                case AudioCue.WideExplosion: return 0.35f;
-                default: return 0.6f;
+                case AudioCue.BoxingHit: return 0.08f;
+                case AudioCue.WallHit: return 0.25f;
+                case AudioCue.WallCritical:
+                case AudioCue.BossStun: return 1f;
+                case AudioCue.Tick: return 0.5f;
+                default: return 0.06f;
             }
         }
 

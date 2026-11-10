@@ -140,7 +140,7 @@ namespace CatDefender
                 if (stunTimer <= 0)
                 {
                     stunTimer = data.stunInterval;
-                    game.StunLane(Lane, data.stunDuration);
+                    if (game.StunLane(Lane, data.stunDuration)) AudioManager.Play(AudioCue.BossStun);
                 }
             }
         }
@@ -167,8 +167,11 @@ namespace CatDefender
             hpBar.SetActive(false);
             game.OnEnemyKilled(this, reward);
             if (data.splitInto != null)
+            {
+                AudioManager.Play(AudioCue.EnemySplit);
                 for (int i = 0; i < data.splitCount; i++)
                     game.SpawnEnemyAt(data.splitInto, transform.position.x + 0.5f * i, i == 0 ? Lane : game.AdjacentLane(Lane));
+            }
             anim.Play(data.dead, false, () => Destroy(gameObject));
         }
     }

@@ -33,7 +33,19 @@ namespace CatDefender
         UpgradeConfirm,
         Shield,
         Skill,
-        WideExplosion
+        WideExplosion,
+        Merge,
+        LevelComplete,
+        GameOver,
+        WaveStart,
+        BossAppear,
+        PerkOffer,
+        CatTrash,
+        WallHit,
+        WallCritical,
+        BossStun,
+        EnemySplit,
+        BoxingActivate
     }
 
     /// <summary>Clip and playback settings explicitly associated with one audio cue.</summary>
@@ -138,7 +150,7 @@ namespace CatDefender
             {
                 case AddonType.Spikes: Play(AudioCue.Skill); break;
                 case AddonType.Tnt: Play(AudioCue.WideExplosion); break;
-                case AddonType.Boxing: Play(AudioCue.Confirm); break;
+                case AddonType.Boxing: Play(AudioCue.BoxingActivate); break;
                 case AddonType.Guardian: Play(AudioCue.Shield); break;
             }
         }
