@@ -241,28 +241,21 @@ namespace CatDefender
             SpawnFx(shootFx, from + new Vector3(0.35f, 0, 0), 0.45f, 850);
         }
 
-        /// <summary>Implements the Merge Strike prototype rules in design/gdd/game-enhance.md.</summary>
-        public void MergeStrike(MergeDirection direction, int firstLane, int secondLane, CatData mergedCat, Vector3 origin)
+        /// <summary>Merge Strike: ghép thành công thì đánh mọi quái còn sống trên hàng của ô đích một lần.</summary>
+        public void MergeStrike(int lane, CatData mergedCat, Vector3 origin)
         {
-            if (direction == MergeDirection.None || mergedCat == null) return;
+            if (mergedCat == null) return;
 
-            int firstAffectedLane = direction == MergeDirection.Horizontal ? firstLane : Mathf.Min(firstLane, secondLane);
-            int lastAffectedLane = direction == MergeDirection.Horizontal ? firstLane : Mathf.Max(firstLane, secondLane);
-            for (int lane = firstAffectedLane; lane <= lastAffectedLane; lane++)
-            {
-                if (!MergeStrikeRules.AffectsLane(direction, firstLane, secondLane, lane)) continue;
-                SpawnMergeStrikeBeam(origin, lane);
-            }
+            SpawnMergeStrikeBeam(origin, lane);
 
             mergeStrikeBuffer.Clear();
             for (int i = 0; i < enemies.Count; i++)
             {
                 Enemy enemy = enemies[i];
-                if (enemy.Alive && MergeStrikeRules.AffectsLane(direction, firstLane, secondLane, enemy.Lane))
-                    mergeStrikeBuffer.Add(enemy);
+                if (enemy.Alive && enemy.Lane == lane) mergeStrikeBuffer.Add(enemy);
             }
 
-            int damage = Perks.Damage(mergedCat.damage);
+            int damage = Mathf.Max(1, Mathf.RoundToInt(Perks.Damage(mergedCat.damage) * level.mergeStrikeMultiplier));
             if (mergeStrikeBuffer.Count > 0)
             {
                 AudioManager.Play(AudioCue.WideExplosion);

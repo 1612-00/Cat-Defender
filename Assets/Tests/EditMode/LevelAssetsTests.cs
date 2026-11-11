@@ -75,20 +75,16 @@ namespace CatDefender.Tests
                 var serialized = new SerializedObject(board);
                 SerializedProperty slots = serialized.FindProperty("slots");
                 SerializedProperty lanes = serialized.FindProperty("slotLanes");
-                SerializedProperty columns = serialized.FindProperty("slotColumns");
                 SerializedProperty previewSlots = serialized.FindProperty("mergePreviewSlots");
                 SerializedProperty previews = serialized.FindProperty("mergePreviewLanes");
 
                 Assert.AreEqual(10, slots.arraySize);
                 Assert.AreEqual(slots.arraySize, lanes.arraySize);
-                Assert.AreEqual(slots.arraySize, columns.arraySize);
                 Assert.AreEqual(slots.arraySize, previewSlots.arraySize);
                 Assert.AreEqual(5, previews.arraySize);
                 Assert.AreEqual(0, lanes.GetArrayElementAtIndex(0).intValue);
                 Assert.AreEqual(1, lanes.GetArrayElementAtIndex(2).intValue);
                 Assert.AreEqual(4, lanes.GetArrayElementAtIndex(8).intValue);
-                Assert.AreEqual(0, columns.GetArrayElementAtIndex(0).intValue);
-                Assert.AreEqual(1, columns.GetArrayElementAtIndex(1).intValue);
 
                 GameManager game = scene.GetRootGameObjects()
                     .SelectMany(root => root.GetComponentsInChildren<GameManager>(true))

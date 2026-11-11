@@ -18,65 +18,17 @@ namespace CatDefender.Tests
         }
 
         [Test]
-        public void Merge_AdjacentSlots_MergesAndReportsDirection()
+        public void Merge_NonAdjacentSlots_Merges()
         {
-            var b = PrototypeBoard();
+            var b = new MergeBoard(9, 15);
             b.Place(0, 2);
-            b.Place(1, 2);
+            b.Place(8, 2);
 
-            Assert.AreEqual(MergeDirection.Horizontal, b.DirectionBetween(0, 1));
-            Assert.AreEqual(MoveResult.Merged, b.Move(0, 1));
-            Assert.AreEqual(3, b.LevelAt(1));
+            Assert.AreEqual(MoveResult.Merged, b.Move(0, 8));
             Assert.AreEqual(0, b.LevelAt(0));
+            Assert.AreEqual(3, b.LevelAt(8));
         }
 
-        [Test]
-        public void Merge_VerticallyAdjacentSlots_MergesAcrossConsecutiveLanes()
-        {
-            var b = PrototypeBoard();
-            b.Place(0, 2);
-            b.Place(2, 2);
-
-            Assert.AreEqual(MergeDirection.Vertical, b.DirectionBetween(0, 2));
-            Assert.AreEqual(MoveResult.Merged, b.Move(0, 2));
-            Assert.AreEqual(3, b.LevelAt(2));
-        }
-
-        [Test]
-        public void Merge_NonAdjacentSlots_DoesNotMerge()
-        {
-            var b = PrototypeBoard();
-            b.Place(0, 2);
-            b.Place(3, 2);
-
-            Assert.AreEqual(MergeDirection.None, b.DirectionBetween(0, 3));
-            Assert.AreEqual(MoveResult.Swapped, b.Move(0, 3));
-            Assert.AreEqual(2, b.LevelAt(0));
-            Assert.AreEqual(2, b.LevelAt(3));
-        }
-
-        [Test]
-        public void Merge_BottomRowSingleSlot_CanMergeWithAdjacentLane()
-        {
-            var b = PrototypeBoard();
-            b.Place(6, 1);
-            b.Place(8, 1);
-
-            Assert.AreEqual(MergeDirection.Vertical, b.DirectionBetween(6, 8));
-            Assert.AreEqual(MoveResult.Merged, b.Move(6, 8));
-            Assert.AreEqual(2, b.LevelAt(8));
-        }
-
-        [Test]
-        public void MergeStrikeRules_SelectsOnlyRowsForMergeDirection()
-        {
-            Assert.IsTrue(MergeStrikeRules.AffectsLane(MergeDirection.Horizontal, 2, 2, 2));
-            Assert.IsFalse(MergeStrikeRules.AffectsLane(MergeDirection.Horizontal, 2, 2, 1));
-            Assert.IsTrue(MergeStrikeRules.AffectsLane(MergeDirection.Vertical, 2, 3, 2));
-            Assert.IsTrue(MergeStrikeRules.AffectsLane(MergeDirection.Vertical, 2, 3, 3));
-            Assert.IsFalse(MergeStrikeRules.AffectsLane(MergeDirection.Vertical, 2, 3, 1));
-            Assert.IsFalse(MergeStrikeRules.AffectsLane(MergeDirection.None, 2, 3, 2));
-        }
 
         [Test]
         public void MergeStrikeVisual_Play_ConfiguresBeamAtStrikeOrigin()
@@ -245,11 +197,6 @@ namespace CatDefender.Tests
                 new SpawnGroup { enemyId = 1, count = 1, interval = 1f },
             },
         }, waveDelay: 2f, firstDelay: 1f);
-
-        static MergeBoard PrototypeBoard() => new MergeBoard(
-            15,
-            new[] { 0, 0, 1, 1, 2, 2, 3, 3, 4 },
-            new[] { 0, 1, 0, 1, 0, 1, 0, 1, 0 });
 
         [Test]
         public void WaveRunner_SpawnsEveryEnemyInOrder_AndWaitsForClearBetweenWaves()

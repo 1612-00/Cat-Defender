@@ -31,6 +31,8 @@ namespace CatDefender
         public float catCostGrowth = 1.15f;
         public int repairCost = 25;
         public int repairAmount = 25;
+        /// <summary>Merge Strike: sát thương = sát thương mèo mới × hệ số này.</summary>
+        public float mergeStrikeMultiplier = 4f;
         public float firstWaveDelay = 5f;
         public float waveDelay = 5f;
         public List<Wave> waves = new List<Wave>();

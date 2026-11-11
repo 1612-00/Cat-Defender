@@ -14,8 +14,6 @@ namespace CatDefender
         [SerializeField] Vector2[] slots;
         /// <summary>Hàng của từng ô, cùng thứ tự với <see cref="slots"/>.</summary>
         [SerializeField] int[] slotLanes;
-        /// <summary>Cột của từng ô; dùng cùng hàng để xác định ghép ngang/dọc.</summary>
-        [SerializeField] int[] slotColumns;
         [SerializeField] SpriteRenderer[] mergePreviewSlots;
         [SerializeField] SpriteRenderer[] mergePreviewLanes;
         /// <summary>Icon thùng rác trên HUD; thả mèo vào đây để bỏ.</summary>
@@ -35,7 +33,7 @@ namespace CatDefender
 
         void Awake()
         {
-            board = new MergeBoard(catsByLevel.Length, slotLanes, slotColumns);
+            board = new MergeBoard(slots.Length, catsByLevel.Length);
             cats = new Cat[slots.Length];
             cam = Camera.main;
         }
@@ -132,7 +130,6 @@ namespace CatDefender
             }
 
             int to = SlotAt(world);
-            MergeDirection direction = to < 0 ? MergeDirection.None : board.DirectionBetween(from, to);
             MoveResult result = to < 0 ? MoveResult.None : board.Move(from, to);
             if (result == MoveResult.Merged)
             {
@@ -151,7 +148,7 @@ namespace CatDefender
                     Destroy(cats[from].gameObject);
                     cats[from] = null;
                     Spawn(to);
-                    game.MergeStrike(direction, slotLanes[from], slotLanes[to], cats[to].Data, cats[to].transform.position);
+                    game.MergeStrike(slotLanes[to], cats[to].Data, cats[to].transform.position);
                     break;
                 case MoveResult.Swapped:
                     (cats[from], cats[to]) = (cats[to], cats[from]);
@@ -175,18 +172,13 @@ namespace CatDefender
 
         void UpdateMergePreview(int from, int to)
         {
-            MergeDirection direction = MergeDirection.None;
-            if (to >= 0 && to != from && board.LevelAt(from) > 0 &&
-                board.LevelAt(from) == board.LevelAt(to) && board.LevelAt(from) < board.MaxLevel)
-                direction = board.DirectionBetween(from, to);
+            bool merge = to >= 0 && to != from && board.LevelAt(from) > 0 &&
+                board.LevelAt(from) == board.LevelAt(to) && board.LevelAt(from) < board.MaxLevel;
 
             for (int lane = 0; lane < mergePreviewLanes.Length; lane++)
-            {
-                mergePreviewLanes[lane].enabled = direction != MergeDirection.None &&
-                    MergeStrikeRules.AffectsLane(direction, slotLanes[from], to >= 0 ? slotLanes[to] : -1, lane);
-            }
+                mergePreviewLanes[lane].enabled = merge && lane == slotLanes[to];
             for (int slot = 0; slot < mergePreviewSlots.Length; slot++)
-                mergePreviewSlots[slot].enabled = direction != MergeDirection.None && slot == to;
+                mergePreviewSlots[slot].enabled = merge && slot == to;
         }
 
         void HideMergePreview()

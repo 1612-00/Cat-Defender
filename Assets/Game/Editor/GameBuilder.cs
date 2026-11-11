@@ -178,10 +178,9 @@ namespace CatDefender.EditorTools
             // 10 ô đặt mèo: 5 hàng x 2 cột. Thùng rác nằm trên HUD, cạnh nút mua.
             Vector2[] slots = SlotRows.SelectMany(y => new[] { new Vector2(SlotColLeft, y), new Vector2(SlotColRight, y) }).ToArray();
             int[] slotLanes = slots.Select(s => Array.IndexOf(SlotRows, s.y)).ToArray();
-            int[] slotColumns = slots.Select(s => Mathf.Approximately(s.x, SlotColLeft) ? 0 : 1).ToArray();
             const float warnLeft = -2.4f, warnRight = 10.72f;
             Set(board, ("game", game), ("catPrefab", catPrefab), ("catsByLevel", cats), ("slots", slots),
-                ("slotLanes", slotLanes), ("slotColumns", slotColumns));
+                ("slotLanes", slotLanes));
 
             // Dải đỏ mờ trên từng hàng, bật trong lúc nghỉ để báo hàng sắp có quái.
             var warningsRoot = new GameObject("LaneWarnings").transform;
@@ -432,6 +431,7 @@ namespace CatDefender.EditorTools
             level.rewardScale = Mathf.Pow(1.08f, number - 1);
             level.startCoins = Mathf.RoundToInt(30 * Mathf.Pow(1.08f, number - 1));
             level.wallHp = 150;
+            level.mergeStrikeMultiplier = 4f;
             // Nghỉ 5 giây trước mỗi wave để người chơi kịp xếp lại mèo theo hàng được báo.
             level.firstWaveDelay = 5f;
             level.waveDelay = 5f;

@@ -21,6 +21,7 @@ MonoBehaviour:
   catCostGrowth: 1.15
   repairCost: 25
   repairAmount: 25
+  mergeStrikeMultiplier: 4
   firstWaveDelay: 5
   waveDelay: 5
   waves:
