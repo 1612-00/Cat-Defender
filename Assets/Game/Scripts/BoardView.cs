@@ -16,6 +16,8 @@ namespace CatDefender
         [SerializeField] int[] slotLanes;
         [SerializeField] SpriteRenderer[] mergePreviewSlots;
         [SerializeField] SpriteRenderer[] mergePreviewLanes;
+        /// <summary>Vòng mờ báo bán kính nổ khi kéo mèo lên mặt đường (phóng mèo).</summary>
+        [SerializeField] SpriteRenderer launchPreview;
         /// <summary>Icon thùng rác trên HUD; thả mèo vào đây để bỏ.</summary>
         [SerializeField] RectTransform trashIcon;
         [SerializeField] float slotRadius = 0.6f;
@@ -109,6 +111,14 @@ namespace CatDefender
             if (dragFrom < 0) return;
             cats[dragFrom].transform.position = world;
             UpdateMergePreview(dragFrom, SlotAt(world));
+            bool launch = SlotAt(world) < 0 && game.IsLaunchZone(world);
+            if (launch)
+            {
+                HideMergePreview();
+                launchPreview.transform.position = world;
+                launchPreview.transform.localScale = Vector3.one * (cats[dragFrom].Data.launchRadius * 2f);
+            }
+            launchPreview.enabled = launch;
         }
 
         /// <summary>Thả mèo đang kéo: vào thùng rác, vào ô khác (di chuyển, ghép, đổi chỗ) hoặc trả về ô cũ.</summary>
@@ -130,6 +140,16 @@ namespace CatDefender
             }
 
             int to = SlotAt(world);
+            if (to < 0 && game.IsLaunchZone(world))
+            {
+                CatData data = cats[from].Data;
+                Vector3 start = slots[from];
+                board.Remove(from);
+                Destroy(cats[from].gameObject);
+                cats[from] = null;
+                game.LaunchCat(data, start, world);
+                return;
+            }
             MoveResult result = to < 0 ? MoveResult.None : board.Move(from, to);
             if (result == MoveResult.Merged)
             {
@@ -183,6 +203,7 @@ namespace CatDefender
 
         void HideMergePreview()
         {
+            launchPreview.enabled = false;
             for (int i = 0; i < mergePreviewLanes.Length; i++)
                 mergePreviewLanes[i].enabled = false;
             for (int i = 0; i < mergePreviewSlots.Length; i++)

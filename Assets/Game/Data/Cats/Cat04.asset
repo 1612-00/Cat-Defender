@@ -16,6 +16,8 @@ MonoBehaviour:
   damage: 37
   fireInterval: 0.8
   bulletSpeed: 22
+  launchMultiplier: 12
+  launchRadius: 1.8
   bulletSprite: {fileID: 21300000, guid: cb99961a8eb6f48498ae080312a92e11, type: 3}
   idle:
   - {fileID: 21300000, guid: 09824c1945af6d54b8188f0eb7c8fa7b, type: 3}

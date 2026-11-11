@@ -1,6 +1,6 @@
 # Kế hoạch tăng chiều sâu gameplay: Phóng mèo (B), Ba họ mèo (A), Hợp đồng wave (C)
 
-> Lập ngày 2026-11-12. Trạng thái: **chưa bắt đầu.** Thay cho prototype Tactical Merge trong roadmap.
+> Lập ngày 2026-11-12. Trạng thái: **bước 0 và B đã code xong; chờ chủ dự án chơi thử bước B.** Thay cho prototype Tactical Merge trong roadmap.
 
 ## Vì sao làm
 
@@ -142,7 +142,7 @@ Chưa tính: hướng dẫn cho ba cơ chế mới (thuộc mốc 4.3) và cân 
 
 | Cổng | Ngày | Test | Nhận xét chơi thử | Quyết định |
 |---|---|---|---|---|
-| 0 | | | | |
-| B | | | | |
+| 0 | 2026-11-12 | 39/39 qua | Chưa chơi thử riêng | Giữ |
+| B | 2026-11-12 | 42/42 qua; Play mode: phóng mèo cấp 1 vào quái, mèo rời bàn, quái trong vùng nổ chết, ô mua lại được | Chờ chủ dự án. Đã biết: vùng báo trước là hình vuông, vùng nổ thật là hình tròn | Chờ |
 | A | | | | |
 | C | | | | |

@@ -212,6 +212,11 @@ namespace CatDefender.EditorTools
                 return preview;
             }).ToArray();
             Set(board, ("mergePreviewSlots", mergeSlotPreview), ("mergePreviewLanes", mergePreview));
+            // Vòng mờ báo bán kính nổ khi kéo mèo lên mặt đường; BoardView tự đặt vị trí và kích thước.
+            SpriteRenderer launchPreview = MakeRenderer("LaunchPreview", mergePreviewRoot, white, unlit, 8,
+                new Color(1f, 0.55f, 0.15f, 0.3f));
+            launchPreview.enabled = false;
+            Set(board, ("launchPreview", launchPreview));
             Set(runner, ("game", game), ("fxPrefab", fxPrefab));
             Set(game, ("levels", levels), ("addons", addons), ("perkPool", perks), ("meta", meta), ("board", board), ("wall", wall),
                 ("laneYs", SlotRows), ("laneWarnings", warnings),
@@ -260,6 +265,8 @@ namespace CatDefender.EditorTools
                 c.damage = Mathf.RoundToInt(4 * Mathf.Pow(2.1f, i));
                 c.fireInterval = 0.8f;
                 c.bulletSpeed = 22f;
+                c.launchMultiplier = 12f;
+                c.launchRadius = 1.8f;
                 c.bulletSprite = bullets[i / 5];
                 c.idle = LoadSprites($"{Kit}/Characters/C{i + 1}/Idle");
                 c.shoot = LoadSprites($"{Kit}/Characters/C{i + 1}/Shoot");

@@ -36,6 +36,8 @@ namespace CatDefender
         [SerializeField] float slowSeconds = 2f;
         [SerializeField] float mergeStrikeBeamThickness = 0.22f;
         [SerializeField] float mergeStrikeVisualSeconds = 0.4f;
+        [SerializeField] float launchFlightSeconds = 0.35f;
+        [SerializeField] float launchArcHeight = 1.2f;
 
         // Ảnh nổ rộng 13 unit ở tỉ lệ 1; vòng lửa chiếm khoảng một nửa bề rộng ảnh.
         const float ExplosionSpriteRadius = 3.2f;
@@ -267,6 +269,53 @@ namespace CatDefender
                 SpawnExplosion(enemy.transform.position + Enemy.AimOffset, 0.45f);
                 enemy.TakeDamage(damage);
             }
+        }
+
+        /// <summary>Vùng thả để phóng mèo: x >= WallX + 0.5 và y trong dải đường (các hàng cộng nửa hàng).</summary>
+        public bool IsLaunchZone(Vector2 p)
+        {
+            if (State != GameState.Playing || Paused || laneYs.Length == 0) return false;
+            float a = laneYs[0], b = laneYs[laneYs.Length - 1];
+            float half = laneYs.Length > 1 ? Mathf.Abs(laneYs[1] - laneYs[0]) * 0.5f : 0.5f;
+            return p.x >= wallX + 0.5f && p.y >= Mathf.Min(a, b) - half && p.y <= Mathf.Max(a, b) + half;
+        }
+
+        /// <summary>Phóng mèo: bay từ ô tới điểm thả rồi nổ. Sát thương tính lúc chạm đất.</summary>
+        public void LaunchCat(CatData cat, Vector3 from, Vector3 to)
+        {
+            if (cat == null) return;
+            StartCoroutine(LaunchRoutine(cat, from, to));
+        }
+
+        System.Collections.IEnumerator LaunchRoutine(CatData cat, Vector3 from, Vector3 to)
+        {
+            var go = new GameObject("LaunchedCat", typeof(SpriteRenderer));
+            SpriteRenderer sr = go.GetComponent<SpriteRenderer>();
+            if (cat.idle != null && cat.idle.Length > 0) sr.sprite = cat.idle[0];
+            sr.sortingOrder = 880;
+            for (float t = 0; t < launchFlightSeconds; t += Time.deltaTime)
+            {
+                float k = t / launchFlightSeconds;
+                go.transform.position = Vector3.Lerp(from, to, k) + Vector3.up * (4f * k * (1f - k) * launchArcHeight);
+                yield return null;
+            }
+            Destroy(go);
+
+            if (State != GameState.Playing) yield break;
+            AudioManager.Play(AudioCue.Explosion);
+            AudioManager.Vibrate();
+            SpawnExplosion(to, cat.launchRadius);
+
+            var positions = new List<(float x, float y)>(enemies.Count);
+            for (int i = 0; i < enemies.Count; i++)
+                positions.Add((enemies[i].transform.position.x, enemies[i].transform.position.y));
+            var hit = new List<int>();
+            LaunchBlast.Select(positions, to.x, to.y, cat.launchRadius, hit);
+            // Sao chép trước: TakeDamage có thể xoá quái khỏi danh sách đang duyệt.
+            var targets = new List<Enemy>(hit.Count);
+            foreach (int i in hit) targets.Add(enemies[i]);
+            int damage = Mathf.Max(1, Mathf.RoundToInt(Perks.Damage(cat.damage) * cat.launchMultiplier));
+            foreach (Enemy e in targets) e.TakeDamage(damage);
         }
 
         void SpawnMergeStrikeBeam(Vector3 origin, int lane)
