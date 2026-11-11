@@ -1,6 +1,6 @@
 # Lộ trình CatDefender: 6 mốc
 
-> Lập ngày 2026-11-10. Trạng thái: **mốc 1, 2, 2.5 và 3 xong; chờ chủ dự án chơi thử mốc 3. Tiếp theo là mốc 4.**
+> Lập ngày 2026-11-10. Cập nhật 2026-11-12: **mốc 1, 2, 2.5 và 3 xong; mốc 4.1 đã tích hợp, chờ nghe thử trên thiết bị. Theo yêu cầu chủ dự án, bước kế tiếp là prototype ngắn Tactical Merge để kiểm chứng hướng gameplay, sau đó tiếp tục mốc 4.**
 
 ## Cách đọc con số
 
@@ -159,6 +159,32 @@ Bản chơi được trọn vẹn (hết mốc 4): 50 giờ AI, khoảng 2 tuầ
 - Gói coin: 10 gem = 300 coin, 25 gem = 900, 50 gem = 2200.
 
 **Việc của bạn:** chơi liên tục 10 level đầu, kiểm tra từng màn hình.
+
+---
+
+## Prototype kiểm chứng gameplay: Tactical Merge (chèn ngày 2026-11-12)
+
+**Mục tiêu:** kiểm tra Merge Strike có tạo quyết định về ghép, vị trí và thời điểm hay không trước khi đầu tư thêm vào hiệu ứng, hướng dẫn và cân bằng. Nội dung luật và phạm vi nằm trong [game-enhance.md](../../design/gdd/game-enhance.md).
+
+Đây là một đợt prototype/decision gate, không phải mốc sản xuất mới. Ước tính sơ bộ **2–4 giờ AI và 0,5–1 giờ chủ dự án**; chưa tính vào tổng 82 giờ. Giữ bàn hiện tại (10 ô đặt mèo, 2 cột × 5 hàng; thùng rác ngoài lưới), thử ghép ngang và dọc có xem trước phạm vi. Không làm Sliding Battlefield, không thêm nội dung/asset sản xuất, và tắt thẻ cùng addon để cô lập cơ chế.
+
+**Tiến độ (2026-11-12):** đã hiện thực luật ghép kề, hai hướng Merge Strike, preview trong scene, cùng vệt đánh và hiệu ứng va chạm khi thả ghép. 43/43 EditMode test qua; Play Mode đã xác nhận vệt sáng trên hai hàng của ghép dọc. P.1 (tình huống thử lặp lại), test sát thương/giáp chuyên biệt, P.4 chơi thử và P.5 quyết định vẫn còn.
+
+| Bước | Việc | Hoàn tất khi |
+|---|---|---|
+| P.1 | Dựng màn thử ngắn với một tình huống nhiều zombie ở cùng hàng và một tình huống đe dọa hai hàng kề nhau | Có thể chơi lặp lại cùng tình huống mà không phụ thuộc nâng cấp meta |
+| P.2 | Làm Merge Strike ngang/dọc, vị trí mèo sau ghép và preview phạm vi | Hai hướng ghép chạy được trên bàn hiện tại; ghép không hợp lệ không mất mèo |
+| P.3 | Viết/chạy test luật và hồi quy | Đúng cấp mèo, vùng ảnh hưởng, một lần trúng mỗi zombie và tương tác giáp; không phá luồng chơi hiện tại |
+| P.4 | Chủ dự án chơi hai lượt đối chiếu: ghép thường và có Merge Strike; ghi nhận lúc giữ cặp, chọn hướng, độ rõ preview và cảm giác thao tác | Có ghi nhận cụ thể cho từng tình huống; chủ dự án xác nhận có hoặc không có thêm quyết định chiến thuật |
+| P.5 | Chốt giữ, sửa hoặc bỏ cơ chế trước khi tiếp tục mở rộng | Quyết định và thay đổi phạm vi được ghi lại; không mặc định tiếp tục chỉ vì prototype đã làm xong |
+
+**Cổng quyết định:** chỉ giữ Merge Strike để phát triển tiếp nếu người chơi hiểu preview, chủ động chọn thời điểm/hướng ghép để xử lý mối đe dọa, và việc tiêu thụ hai mèo để đổi lấy mèo cấp cao cùng đòn diện rộng tạo thành đánh đổi có ý nghĩa. Nếu người chơi luôn ghép ngay, không cân nhắc hướng, hoặc ghép cặp kề nhau gây phiền, dừng mở rộng và điều chỉnh luật trước.
+
+**Sau prototype:** nếu đạt cổng, tiếp tục các đầu việc còn lại của mốc 4 rồi đánh giá lại phạm vi hướng dẫn/cân bằng. Sliding Battlefield chỉ được lên kế hoạch thành prototype riêng sau khi Merge Strike đã được chủ dự án xác nhận; không gộp nó vào đợt này.
+
+---
+
+> **Cập nhật 2026-11-12:** chủ dự án chơi thử thấy Merge Strike chưa tạo đột phá. Hướng tiếp theo nằm trong [gameplay-depth-plan.md](gameplay-depth-plan.md): phóng mèo, ba họ mèo, hợp đồng wave.
 
 ---
 

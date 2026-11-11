@@ -1,6 +1,9 @@
 using System.Linq;
 using NUnit.Framework;
 using UnityEditor;
+using UnityEditor.SceneManagement;
+using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace CatDefender.Tests
 {
@@ -49,6 +52,57 @@ namespace CatDefender.Tests
             var enemies = level.waves.SelectMany(w => w.groups).Select(g => g.enemy).Distinct().ToList();
             Assert.AreEqual(1, enemies.Count);
             Assert.IsFalse(enemies[0].isBoss);
+        }
+
+        [Test]
+        public void GameplayScene_MergeBoardHasSlotTopologyAndPreviewLanes()
+        {
+            Scene scene = EditorSceneManager.OpenScene("Assets/Game/Scenes/Gameplay.unity", OpenSceneMode.Additive);
+            try
+            {
+                BoardView board = scene.GetRootGameObjects()
+                    .SelectMany(root => root.GetComponentsInChildren<BoardView>(true))
+                    .SingleOrDefault();
+                Assert.IsNotNull(board);
+                Hud hud = scene.GetRootGameObjects()
+                    .SelectMany(root => root.GetComponentsInChildren<Hud>(true))
+                    .SingleOrDefault();
+                Assert.IsNotNull(hud);
+                Canvas canvas = hud.GetComponent<Canvas>();
+                Assert.IsNotNull(canvas);
+                Assert.AreEqual(RenderMode.ScreenSpaceOverlay, canvas.renderMode);
+
+                var serialized = new SerializedObject(board);
+                SerializedProperty slots = serialized.FindProperty("slots");
+                SerializedProperty lanes = serialized.FindProperty("slotLanes");
+                SerializedProperty columns = serialized.FindProperty("slotColumns");
+                SerializedProperty previewSlots = serialized.FindProperty("mergePreviewSlots");
+                SerializedProperty previews = serialized.FindProperty("mergePreviewLanes");
+
+                Assert.AreEqual(10, slots.arraySize);
+                Assert.AreEqual(slots.arraySize, lanes.arraySize);
+                Assert.AreEqual(slots.arraySize, columns.arraySize);
+                Assert.AreEqual(slots.arraySize, previewSlots.arraySize);
+                Assert.AreEqual(5, previews.arraySize);
+                Assert.AreEqual(0, lanes.GetArrayElementAtIndex(0).intValue);
+                Assert.AreEqual(1, lanes.GetArrayElementAtIndex(2).intValue);
+                Assert.AreEqual(4, lanes.GetArrayElementAtIndex(8).intValue);
+                Assert.AreEqual(0, columns.GetArrayElementAtIndex(0).intValue);
+                Assert.AreEqual(1, columns.GetArrayElementAtIndex(1).intValue);
+
+                GameManager game = scene.GetRootGameObjects()
+                    .SelectMany(root => root.GetComponentsInChildren<GameManager>(true))
+                    .SingleOrDefault();
+                Assert.IsNotNull(game);
+                var gameSerialized = new SerializedObject(game);
+                Assert.IsNotNull(gameSerialized.FindProperty("mergeStrikeSprite").objectReferenceValue);
+                Assert.Greater(gameSerialized.FindProperty("mergeStrikeVisualSeconds").floatValue, 0f);
+                Assert.Greater(gameSerialized.FindProperty("mergeStrikeBeamThickness").floatValue, 0f);
+            }
+            finally
+            {
+                EditorSceneManager.CloseScene(scene, true);
+            }
         }
     }
 }

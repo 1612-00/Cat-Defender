@@ -178,11 +178,12 @@ namespace CatDefender.EditorTools
             // 10 ô đặt mèo: 5 hàng x 2 cột. Thùng rác nằm trên HUD, cạnh nút mua.
             Vector2[] slots = SlotRows.SelectMany(y => new[] { new Vector2(SlotColLeft, y), new Vector2(SlotColRight, y) }).ToArray();
             int[] slotLanes = slots.Select(s => Array.IndexOf(SlotRows, s.y)).ToArray();
+            int[] slotColumns = slots.Select(s => Mathf.Approximately(s.x, SlotColLeft) ? 0 : 1).ToArray();
+            const float warnLeft = -2.4f, warnRight = 10.72f;
             Set(board, ("game", game), ("catPrefab", catPrefab), ("catsByLevel", cats), ("slots", slots),
-                ("slotLanes", slotLanes));
+                ("slotLanes", slotLanes), ("slotColumns", slotColumns));
 
             // Dải đỏ mờ trên từng hàng, bật trong lúc nghỉ để báo hàng sắp có quái.
-            const float warnLeft = -2.4f, warnRight = 10.72f;
             var warningsRoot = new GameObject("LaneWarnings").transform;
             SpriteRenderer[] warnings = SlotRows.Select((y, i) =>
             {
@@ -192,11 +193,31 @@ namespace CatDefender.EditorTools
                 w.enabled = false;
                 return w;
             }).ToArray();
+            var mergePreviewRoot = new GameObject("MergeStrikePreview").transform;
+            SpriteRenderer[] mergePreview = SlotRows.Select((y, i) =>
+            {
+                SpriteRenderer preview = MakeRenderer("Lane" + i, mergePreviewRoot, white, unlit, -19,
+                    new Color(0.15f, 0.8f, 1f, 0.24f));
+                preview.transform.position = new Vector3((warnLeft + warnRight) * 0.5f, y, 0);
+                preview.transform.localScale = new Vector3(warnRight - warnLeft, 1.0f, 1);
+                preview.enabled = false;
+                return preview;
+            }).ToArray();
+            SpriteRenderer[] mergeSlotPreview = slots.Select((position, i) =>
+            {
+                SpriteRenderer preview = MakeRenderer("Slot" + i, mergePreviewRoot, white, unlit, 9,
+                    new Color(0.15f, 0.8f, 1f, 0.45f));
+                preview.transform.position = position;
+                preview.transform.localScale = Vector3.one * 0.95f;
+                preview.enabled = false;
+                return preview;
+            }).ToArray();
+            Set(board, ("mergePreviewSlots", mergeSlotPreview), ("mergePreviewLanes", mergePreview));
             Set(runner, ("game", game), ("fxPrefab", fxPrefab));
             Set(game, ("levels", levels), ("addons", addons), ("perkPool", perks), ("meta", meta), ("board", board), ("wall", wall),
                 ("laneYs", SlotRows), ("laneWarnings", warnings),
                 ("addonRunner", runner), ("background", background),
-                ("enemyPrefab", enemyPrefab), ("bulletPrefab", bulletPrefab), ("fxPrefab", fxPrefab),
+                ("enemyPrefab", enemyPrefab), ("bulletPrefab", bulletPrefab), ("fxPrefab", fxPrefab), ("mergeStrikeSprite", white),
                 ("shootFx", LoadSprites($"{Kit}/ShootFx")), ("explosionFx", LoadSprites($"{Kit}/Explosion")));
 
             BuildHud(game, board, addons);

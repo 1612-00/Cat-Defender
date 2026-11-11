@@ -21,6 +21,7 @@ namespace CatDefender
         [SerializeField] Enemy enemyPrefab;
         [SerializeField] Bullet bulletPrefab;
         [SerializeField] SpriteAnimator fxPrefab;
+        [SerializeField] Sprite mergeStrikeSprite;
         [SerializeField] Sprite[] shootFx;
         [SerializeField] Sprite[] explosionFx;
         /// <summary>Toạ độ y của tâm từng hàng, từ trên xuống.</summary>
@@ -33,12 +34,15 @@ namespace CatDefender
         [SerializeField] int perkChoiceCount = 3;
         [SerializeField] float splashRadius = 1.5f;
         [SerializeField] float slowSeconds = 2f;
+        [SerializeField] float mergeStrikeBeamThickness = 0.22f;
+        [SerializeField] float mergeStrikeVisualSeconds = 0.4f;
 
         // Ảnh nổ rộng 13 unit ở tỉ lệ 1; vòng lửa chiếm khoảng một nửa bề rộng ảnh.
         const float ExplosionSpriteRadius = 3.2f;
 
         readonly List<Enemy> enemies = new List<Enemy>();
         readonly List<Enemy> splashBuffer = new List<Enemy>();
+        readonly List<Enemy> mergeStrikeBuffer = new List<Enemy>();
         readonly List<int> spawnBuffer = new List<int>();
         readonly List<EnemyData> enemyTypes = new List<EnemyData>();
         readonly System.Random rng = new System.Random();
@@ -235,6 +239,60 @@ namespace CatDefender
             Bullet b = Instantiate(bulletPrefab, from, Quaternion.identity);
             b.Init(this, target, Perks.Damage(cat.damage), cat.bulletSpeed, cat.bulletSprite);
             SpawnFx(shootFx, from + new Vector3(0.35f, 0, 0), 0.45f, 850);
+        }
+
+        /// <summary>Implements the Merge Strike prototype rules in design/gdd/game-enhance.md.</summary>
+        public void MergeStrike(MergeDirection direction, int firstLane, int secondLane, CatData mergedCat, Vector3 origin)
+        {
+            if (direction == MergeDirection.None || mergedCat == null) return;
+
+            int firstAffectedLane = direction == MergeDirection.Horizontal ? firstLane : Mathf.Min(firstLane, secondLane);
+            int lastAffectedLane = direction == MergeDirection.Horizontal ? firstLane : Mathf.Max(firstLane, secondLane);
+            for (int lane = firstAffectedLane; lane <= lastAffectedLane; lane++)
+            {
+                if (!MergeStrikeRules.AffectsLane(direction, firstLane, secondLane, lane)) continue;
+                SpawnMergeStrikeBeam(origin, lane);
+            }
+
+            mergeStrikeBuffer.Clear();
+            for (int i = 0; i < enemies.Count; i++)
+            {
+                Enemy enemy = enemies[i];
+                if (enemy.Alive && MergeStrikeRules.AffectsLane(direction, firstLane, secondLane, enemy.Lane))
+                    mergeStrikeBuffer.Add(enemy);
+            }
+
+            int damage = Perks.Damage(mergedCat.damage);
+            if (mergeStrikeBuffer.Count > 0)
+            {
+                AudioManager.Play(AudioCue.WideExplosion);
+                AudioManager.Vibrate();
+            }
+            for (int i = 0; i < mergeStrikeBuffer.Count; i++)
+            {
+                Enemy enemy = mergeStrikeBuffer[i];
+                SpawnExplosion(enemy.transform.position + Enemy.AimOffset, 0.45f);
+                enemy.TakeDamage(damage);
+            }
+        }
+
+        void SpawnMergeStrikeBeam(Vector3 origin, int lane)
+        {
+            if (mergeStrikeSprite == null)
+            {
+                Debug.LogError("Merge Strike visual sprite is not configured.", this);
+                return;
+            }
+
+            float length = Mathf.Max(0.1f, targetMaxX - origin.x);
+            var visual = new GameObject("MergeStrikeBeam", typeof(SpriteRenderer), typeof(MergeStrikeVisual));
+            visual.GetComponent<MergeStrikeVisual>().Play(
+                mergeStrikeSprite,
+                new Vector3(origin.x, LaneY(lane), 0f),
+                length,
+                mergeStrikeBeamThickness,
+                mergeStrikeVisualSeconds,
+                870);
         }
 
         /// <summary>Đạn trúng đích: gây sát thương, rồi áp hiệu ứng lan và làm chậm từ thẻ nâng cấp.</summary>

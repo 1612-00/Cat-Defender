@@ -14,6 +14,10 @@ namespace CatDefender
         [SerializeField] Vector2[] slots;
         /// <summary>Hàng của từng ô, cùng thứ tự với <see cref="slots"/>.</summary>
         [SerializeField] int[] slotLanes;
+        /// <summary>Cột của từng ô; dùng cùng hàng để xác định ghép ngang/dọc.</summary>
+        [SerializeField] int[] slotColumns;
+        [SerializeField] SpriteRenderer[] mergePreviewSlots;
+        [SerializeField] SpriteRenderer[] mergePreviewLanes;
         /// <summary>Icon thùng rác trên HUD; thả mèo vào đây để bỏ.</summary>
         [SerializeField] RectTransform trashIcon;
         [SerializeField] float slotRadius = 0.6f;
@@ -31,7 +35,7 @@ namespace CatDefender
 
         void Awake()
         {
-            board = new MergeBoard(slots.Length, catsByLevel.Length);
+            board = new MergeBoard(catsByLevel.Length, slotLanes, slotColumns);
             cats = new Cat[slots.Length];
             cam = Camera.main;
         }
@@ -104,7 +108,9 @@ namespace CatDefender
 
         public void Drag(Vector2 world)
         {
-            if (dragFrom >= 0) cats[dragFrom].transform.position = world;
+            if (dragFrom < 0) return;
+            cats[dragFrom].transform.position = world;
+            UpdateMergePreview(dragFrom, SlotAt(world));
         }
 
         /// <summary>Thả mèo đang kéo: vào thùng rác, vào ô khác (di chuyển, ghép, đổi chỗ) hoặc trả về ô cũ.</summary>
@@ -113,6 +119,7 @@ namespace CatDefender
             if (dragFrom < 0) return;
             int from = dragFrom;
             dragFrom = -1;
+            HideMergePreview();
             cats[from].GetComponent<SpriteRenderer>().sortingOrder = IdleOrder;
 
             if (Vector2.Distance(world, TrashWorld) <= slotRadius)
@@ -125,6 +132,7 @@ namespace CatDefender
             }
 
             int to = SlotAt(world);
+            MergeDirection direction = to < 0 ? MergeDirection.None : board.DirectionBetween(from, to);
             MoveResult result = to < 0 ? MoveResult.None : board.Move(from, to);
             if (result == MoveResult.Merged)
             {
@@ -143,6 +151,7 @@ namespace CatDefender
                     Destroy(cats[from].gameObject);
                     cats[from] = null;
                     Spawn(to);
+                    game.MergeStrike(direction, slotLanes[from], slotLanes[to], cats[to].Data, cats[to].transform.position);
                     break;
                 case MoveResult.Swapped:
                     (cats[from], cats[to]) = (cats[to], cats[from]);
@@ -158,9 +167,34 @@ namespace CatDefender
         void CancelDrag()
         {
             if (dragFrom < 0) return;
+            HideMergePreview();
             Place(dragFrom);
             cats[dragFrom].GetComponent<SpriteRenderer>().sortingOrder = IdleOrder;
             dragFrom = -1;
+        }
+
+        void UpdateMergePreview(int from, int to)
+        {
+            MergeDirection direction = MergeDirection.None;
+            if (to >= 0 && to != from && board.LevelAt(from) > 0 &&
+                board.LevelAt(from) == board.LevelAt(to) && board.LevelAt(from) < board.MaxLevel)
+                direction = board.DirectionBetween(from, to);
+
+            for (int lane = 0; lane < mergePreviewLanes.Length; lane++)
+            {
+                mergePreviewLanes[lane].enabled = direction != MergeDirection.None &&
+                    MergeStrikeRules.AffectsLane(direction, slotLanes[from], to >= 0 ? slotLanes[to] : -1, lane);
+            }
+            for (int slot = 0; slot < mergePreviewSlots.Length; slot++)
+                mergePreviewSlots[slot].enabled = direction != MergeDirection.None && slot == to;
+        }
+
+        void HideMergePreview()
+        {
+            for (int i = 0; i < mergePreviewLanes.Length; i++)
+                mergePreviewLanes[i].enabled = false;
+            for (int i = 0; i < mergePreviewSlots.Length; i++)
+                mergePreviewSlots[i].enabled = false;
         }
 
         int SlotAt(Vector2 world)
