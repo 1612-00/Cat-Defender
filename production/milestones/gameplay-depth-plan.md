@@ -88,14 +88,25 @@ Một bot chạy trong Play mode, chơi từng level nhiều lần ở tốc đ�
 
 Để bot ghép được, `BoardView` thêm API đọc: số ô, vị trí ô, cấp mèo tại ô. Bot ghép bằng `Press/Release` có sẵn.
 
+### Số đo mốc (2026-11-12, trước khi chỉnh, tiến trình mặc định, 2 lượt mỗi level)
+
+| Level | Bot hợp lý (dời mèo về hàng có quái, không dùng công cụ) | Bot ẩu (đặt mèo ngẫu nhiên) |
+|---|---|---|
+| 1 | Thắng 2/2, tường 100% | Thua 2/2 ở wave 2 |
+| 2 | Thắng 2/2, tường 100% | Thua 2/2 ở wave 2 |
+| 3 | Thua 2/2 ở wave 4 (quái giáp) | Thua 2/2 ở wave 2 |
+
+**Kết luận từ số đo:** game gốc không dễ với người đặt mèo bừa; hàng bỏ trống làm tường vỡ trong khoảng 10 giây. Màn 1–2 dễ với lối chơi cơ bản (tường không mất máu). Chủ dự án thắng bằng cách "ném linh tinh" nhiều khả năng vì công cụ quá mạnh: một cú phóng mèo cấp 1 (48 sát thương, nổ lan) giết cả cụm quái và tiền thưởng gần đủ mua lại mèo. Vì vậy D.2 ưu tiên giảm sức công cụ và thêm bot "ném mèo" để đo, **không hạ máu tường**.
+
 ### D.2 Núm chỉnh độ khó (agent viết code, phiên chính chỉnh số)
+
+**Bot thứ ba, "Ném mèo" (`BotPolicy.Thrower`):** mua mèo ngay khi đủ coin; khi có quái đã vào màn hình thì phóng con mèo cấp thấp nhất vào quái đi đầu; không xếp, không ghép.
 
 | Núm | Hiện tại | Nháp mới | Nơi đặt |
 |---|---|---|---|
 | Hệ số lượng quái theo level | `1 + 0,04 × (level − 1)` | Bảng cho level 1–6: 1,0 / 1,4 / 1,9 / 2,4 / 2,9 / 3,4; sau level 6 tăng 4% mỗi level | Hằng có tên ở đầu `GameBuilder` |
 | Tăng lượng quái theo wave | `1 + 0,35 × wave` | `1 + 0,5 × wave` | như trên |
 | Số quái tối đa một nhóm | 25 | 40 | như trên |
-| Máu tường | 150 | 100 | `LevelData.wallHp` |
 | Hệ số phóng mèo | 12 | 6 | `CatData.launchMultiplier` |
 | Tỉ lệ quái dồn vào hàng chính | chia đều các hàng đang mở | 0,6 | `LevelData.mainLaneShare` (mới) |
 
@@ -109,12 +120,11 @@ Cộng dồn sát thương vào tường theo hàng của quái gây ra. Khi thu
 
 Chạy bot 3 lượt mỗi level cho level 1–6, sửa các hằng ở D.2 cho tới khi đạt:
 
-| Level | Bot chơi ẩu |
+| Level | Mục tiêu |
 |---|---|
-| 1 | Thắng 3/3, tường còn từ 50% |
-| 2 | Thắng ít nhất 2/3 |
-| 3 | Thắng 1–2/3 |
-| 4–6 | Thua ít nhất 2/3 |
+| 1 | Hợp lý thắng 3/3. Ẩu và Ném mèo thua ít nhất 2/3. |
+| 2 | Hợp lý thắng nhưng tường mất máu. Ẩu và Ném mèo thua 3/3. |
+| 3–6 | Hợp lý thua ít nhất 2/3: người chơi phải dùng thêm công cụ đúng lúc mới qua. |
 
 **Hạn chế của phép đo:** bot chỉ cho biết chơi ẩu có thua không. "Chơi đúng thì thắng" phải do chủ dự án chơi thử xác nhận.
 

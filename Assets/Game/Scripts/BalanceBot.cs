@@ -8,6 +8,9 @@ using UnityEngine.SceneManagement;
 
 namespace CatDefender
 {
+    /// <summary>Cách bot đặt mèo: Careless rải ngẫu nhiên như người chơi ẩu; Sensible dồn mèo mạnh vào hàng có cảnh báo.</summary>
+    public enum BotPolicy { Careless, Sensible }
+
     /// <summary>
     /// Công cụ gỡ lỗi (D.1 trong gameplay-depth-plan): bot chơi ẩu để đo độ khó. Chỉ chạy khi gọi <see cref="Run"/> trong Play mode.
     /// Tiến trình lưu thật được sao lưu rồi khôi phục khi xong hoặc khi bị ngắt.
@@ -16,7 +19,6 @@ namespace CatDefender
     {
         const float TickSeconds = 0.25f, TimeoutSeconds = 600f;
         const string BackupPath = "Library/balance_bot_save_backup.json";
-        const string ReportPath = "production/balance/bot-report.md";
 
         static BalanceBot instance;
 
@@ -28,9 +30,15 @@ namespace CatDefender
         bool hadSave, restored, prevBackground;
         string originalSave;
         GameManager game;
+        BotPolicy policy;
+        readonly System.Random rng = new System.Random();
 
-        /// <summary>Chạy bot trên các level (chỉ số 0), mỗi level runsPerLevel lượt, ở tốc độ speed.</summary>
-        public static void Run(int[] levelIndices, int runsPerLevel, float speed)
+        /// <summary>Chạy bot kiểu Careless (xem bản có policy).</summary>
+        public static void Run(int[] levelIndices, int runsPerLevel, float speed) =>
+            Run(levelIndices, runsPerLevel, speed, BotPolicy.Careless);
+
+        /// <summary>Chạy bot trên các level (chỉ số 0), mỗi level runsPerLevel lượt, ở tốc độ speed, theo chính sách chơi policy.</summary>
+        public static void Run(int[] levelIndices, int runsPerLevel, float speed, BotPolicy policy)
         {
             if (instance != null) { Debug.LogError("BalanceBot is already running."); return; }
             if (!Application.isPlaying) { Debug.LogError("BalanceBot needs Play mode."); return; }
@@ -40,6 +48,7 @@ namespace CatDefender
             bot.levels = levelIndices;
             bot.runs = runsPerLevel;
             bot.speed = speed;
+            bot.policy = policy;
             instance = bot;
             bot.StartCoroutine(bot.Main());
         }
@@ -110,7 +119,7 @@ namespace CatDefender
                         seconds = seconds,
                     };
                     all[l].Add(res);
-                    Debug.Log($"BALANCE level={levels[l] + 1} run={r + 1} result={res.outcome} wall={res.wall:0}% wave={res.wave}/{game.WaveCount} seconds={res.seconds:0}");
+                    Debug.Log($"BALANCE policy={policy} level={levels[l] + 1} run={r + 1} result={res.outcome} wall={res.wall:0}% wave={res.wave}/{game.WaveCount} seconds={res.seconds:0}");
                 }
             }
             WriteReport(all);
@@ -118,24 +127,104 @@ namespace CatDefender
             Debug.Log("BALANCE DONE");
         }
 
-        void Act(BoardView board)
+        int[] Levels(BoardView board)
         {
-            if (game.CanBuyCat) game.BuyCat();
             var lv = new int[board.SlotCount];
             for (int i = 0; i < lv.Length; i++) lv[i] = board.LevelAt(i);
-            if (FindMergePair(lv, board.MaxLevel, out int a, out int b))
+            return lv;
+        }
+
+        void MoveCat(BoardView board, int from, int to)
+        {
+            board.Press(board.SlotWorld(from));
+            board.Release(board.SlotWorld(to));
+        }
+
+        /// <summary>Mỗi nhịp: ghép nếu có cặp; không thì mua. Careless rải mèo mới ngẫu nhiên; Sensible sắp xếp dần (tối đa một nước/nhịp).</summary>
+        void Act(BoardView board)
+        {
+            int[] lv = Levels(board);
+            // Ghép làm mất một con mèo, tức mất một hàng được che. Bot hợp lý chỉ ghép khi sau đó vẫn đủ mèo cho
+            // mọi hàng có quái; bot ẩu giữ ít nhất 3 con.
+            int catCount = 0;
+            foreach (int level in lv) if (level > 0) catCount++;
+            int keep = policy == BotPolicy.Sensible ? game.ActiveLanes.Count : 3;
+            if (catCount > keep && FindMergePair(lv, board.MaxLevel, out int a, out int b)) { MoveCat(board, a, b); return; }
+            if (game.CanBuyCat)
             {
-                board.Press(board.SlotWorld(a));
-                board.Release(board.SlotWorld(b));
+                game.BuyCat();
+                if (policy == BotPolicy.Careless)
+                {
+                    int[] after = Levels(board);
+                    int from = -1;
+                    var empties = new List<int>();
+                    for (int i = 0; i < after.Length; i++)
+                    {
+                        if (lv[i] == 0 && after[i] > 0) from = i;
+                        if (after[i] == 0) empties.Add(i);
+                    }
+                    if (from >= 0 && empties.Count > 0) MoveCat(board, from, empties[rng.Next(empties.Count)]);
+                    return;
+                }
+                lv = Levels(board);
             }
+            if (policy != BotPolicy.Sensible) return;
+            var lanes = new int[lv.Length];
+            for (int i = 0; i < lanes.Length; i++) lanes[i] = board.SlotLane(i);
+            if (FindRearrangeMove(lv, lanes, game.ActiveLanes, out int f, out int t)) MoveCat(board, f, t);
+        }
+
+        /// <summary>
+        /// Một nước sắp xếp hướng tới: mèo mạnh nhất đứng trên hàng có quái, dàn đều giữa các hàng đó.
+        /// Mèo mạnh nhất ở hàng không có quái (hoặc chồng lên hàng đã đông hơn hàng khác từ 2 mèo) được chuyển tới
+        /// hàng đang ít mèo nhất: vào ô trống, hoặc đổi chỗ với mèo yếu hơn (không bao giờ đổi với mèo cùng cấp để khỏi ghép).
+        /// Mỗi nước tăng (tổng cấp trên hàng có quái, rồi mức đều), nên lặp lại chắc chắn dừng.
+        /// </summary>
+        public static bool FindRearrangeMove(int[] slotLevels, int[] slotLanes, IReadOnlyList<int> activeLanes, out int from, out int to)
+        {
+            from = to = -1;
+            if (activeLanes == null || activeLanes.Count == 0) return false;
+            var counts = new Dictionary<int, int>();
+            foreach (int l in activeLanes) counts[l] = 0;
+            var cats = new List<int>();
+            for (int i = 0; i < slotLevels.Length; i++)
+            {
+                if (slotLevels[i] <= 0) continue;
+                cats.Add(i);
+                if (counts.ContainsKey(slotLanes[i])) counts[slotLanes[i]]++;
+            }
+            cats.Sort((x, y) => slotLevels[x] != slotLevels[y] ? slotLevels[y].CompareTo(slotLevels[x]) : x.CompareTo(y));
+            var order = new List<int>(counts.Keys);
+            order.Sort((x, y) => counts[x] != counts[y] ? counts[x].CompareTo(counts[y]) : x.CompareTo(y));
+
+            foreach (int c in cats)
+            {
+                bool inactive = !counts.ContainsKey(slotLanes[c]);
+                foreach (int lane in order)
+                {
+                    if (!inactive && counts[lane] > counts[slotLanes[c]] - 2) break; // order tăng dần: các hàng sau chỉ đông hơn
+                    int dest = -1;
+                    for (int s = 0; s < slotLevels.Length; s++)
+                    {
+                        if (slotLanes[s] != lane) continue;
+                        if (slotLevels[s] == 0) { dest = s; break; }
+                        // Chỉ đổi chỗ khi mèo kia yếu hơn (và chỉ khi nguồn nằm ngoài hàng có quái).
+                        if (inactive && slotLevels[s] < slotLevels[c] && (dest < 0 || slotLevels[s] < slotLevels[dest])) dest = s;
+                    }
+                    if (dest < 0 || (slotLevels[dest] > 0 && !inactive)) continue;
+                    from = c; to = dest;
+                    return true;
+                }
+            }
+            return false;
         }
 
         void WriteReport(List<Result>[] all)
         {
             var sb = new StringBuilder();
-            sb.AppendLine($"# Balance bot report");
+            sb.AppendLine($"# Balance bot report (policy={policy})");
             sb.AppendLine();
-            sb.AppendLine($"Date: {DateTime.Now:yyyy-MM-dd HH:mm} | runsPerLevel: {runs} | speed: {speed}x");
+            sb.AppendLine($"Date: {DateTime.Now:yyyy-MM-dd HH:mm} | policy: {policy} | runsPerLevel: {runs} | speed: {speed}x");
             sb.AppendLine();
             sb.AppendLine("| Level | Wins/Runs | Avg wall % at end | Avg wave reached | Avg seconds |");
             sb.AppendLine("|---|---|---|---|---|");
@@ -146,8 +235,9 @@ namespace CatDefender
                 int n = Math.Max(1, all[l].Count);
                 sb.AppendLine($"| {levels[l] + 1} | {wins}/{all[l].Count} | {wall / n:0} | {wave / n:0.0} | {sec / n:0} |");
             }
-            Directory.CreateDirectory(Path.GetDirectoryName(ReportPath));
-            File.WriteAllText(ReportPath, sb.ToString());
+            string path = $"production/balance/bot-report-{policy.ToString().ToLowerInvariant()}.md";
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            File.WriteAllText(path, sb.ToString());
         }
 
         /// <summary>Khôi phục tiến trình lưu và các thiết lập tạm; an toàn khi gọi nhiều lần.</summary>

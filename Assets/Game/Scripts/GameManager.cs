@@ -182,6 +182,9 @@ namespace CatDefender
 
         // ---------- Hàng ----------
 
+        /// <summary>Các hàng có quái của wave hiện tại (hoặc wave sắp tới khi đang nghỉ). Chỉ đọc.</summary>
+        public IReadOnlyList<int> ActiveLanes => activeLanes;
+
         /// <summary>Một hàng ngẫu nhiên trong các hàng đang có quái của wave hiện tại.</summary>
         public int RandomLane() =>
             activeLanes.Count > 0 ? activeLanes[rng.Next(activeLanes.Count)] : rng.Next(laneYs.Length);

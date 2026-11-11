@@ -39,6 +39,9 @@ namespace CatDefender
         /// <summary>Vị trí thế giới của ô i.</summary>
         public Vector2 SlotWorld(int i) => slots[i];
 
+        /// <summary>Chỉ số hàng của ô i.</summary>
+        public int SlotLane(int i) => slotLanes[i];
+
         /// <summary>Cấp mèo ở ô i; 0 là ô trống.</summary>
         public int LevelAt(int i) => board.LevelAt(i);
 
