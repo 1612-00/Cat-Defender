@@ -29,6 +29,17 @@ namespace CatDefender.EditorTools
         const float SlotColLeft = -7.99f, SlotColRight = -6.60f;
         const float BarX = -3.91f, BarBottom = -1.42f, BarHeight = 4.05f, BarWidth = 0.17f;
 
+        // Ngân sách máu của wave w (từ 0) ở level n = WaveBudgetBase × (1 + WaveBudgetGrowthPerWave × w) × LevelFactor(n).
+        const float WaveBudgetBase = 100f, WaveBudgetGrowthPerWave = 0.5f, LateLevelGrowth = 0.04f;
+        const int MaxGroupCount = 40;
+        static readonly float[] EarlyLevelFactor = { 1.0f, 1.4f, 1.6f, 1.9f, 2.2f, 2.5f };
+
+        /// <summary>Hệ số độ khó theo level: bảng cho level 1–6, sau đó tăng đều LateLevelGrowth mỗi level.</summary>
+        public static float LevelFactor(int level) =>
+            level <= EarlyLevelFactor.Length
+                ? EarlyLevelFactor[level - 1]
+                : EarlyLevelFactor[EarlyLevelFactor.Length - 1] * (1 + LateLevelGrowth * (level - EarlyLevelFactor.Length));
+
         // Quái thường 1..8: máu, tốc độ, sát thương, coin. Loại 3, 5, 7 chạy nhanh, máu thấp.
         static readonly (int hp, float speed, int damage, int reward)[] RegStats =
         {
@@ -265,7 +276,7 @@ namespace CatDefender.EditorTools
                 c.damage = Mathf.RoundToInt(4 * Mathf.Pow(2.1f, i));
                 c.fireInterval = 0.8f;
                 c.bulletSpeed = 22f;
-                c.launchMultiplier = 12f;
+                c.launchMultiplier = 6f;
                 c.launchRadius = 1.8f;
                 c.bulletSprite = bullets[i / 5];
                 c.idle = LoadSprites($"{Kit}/Characters/C{i + 1}/Idle");
@@ -439,6 +450,7 @@ namespace CatDefender.EditorTools
             level.startCoins = Mathf.RoundToInt(30 * Mathf.Pow(1.08f, number - 1));
             level.wallHp = 150;
             level.mergeStrikeMultiplier = 4f;
+            level.mainLaneShare = 0.6f;
             // Nghỉ 5 giây trước mỗi wave để người chơi kịp xếp lại mèo theo hàng được báo.
             level.firstWaveDelay = 5f;
             level.waveDelay = 5f;
@@ -448,7 +460,7 @@ namespace CatDefender.EditorTools
             level.waves = new List<LevelData.Wave>();
             for (int w = 0; w < waveCount; w++)
             {
-                float budget = 100f * (1 + 0.35f * w) * (1 + 0.04f * (number - 1));
+                float budget = WaveBudgetBase * (1 + WaveBudgetGrowthPerWave * w) * LevelFactor(number);
                 int a = w % unlocked, b = unlocked - 1;
                 var wave = new LevelData.Wave();
                 if (a == b)
@@ -470,7 +482,7 @@ namespace CatDefender.EditorTools
 
         static LevelData.Group Group(EnemyData enemy, float hpBudget)
         {
-            int count = Mathf.Clamp(Mathf.RoundToInt(hpBudget / enemy.hp), 2, 25);
+            int count = Mathf.Clamp(Mathf.RoundToInt(hpBudget / enemy.hp), 2, MaxGroupCount);
             return new LevelData.Group { enemy = enemy, count = count, interval = Mathf.Clamp(10f / count, 0.4f, 1.5f) };
         }
 
@@ -560,6 +572,8 @@ namespace CatDefender.EditorTools
 
             GameObject lose = ResultPanel("LosePanel", canvas, "LosePopUp", out Transform loseRoot);
             Text loseCoins = RewardRow("RewardCoins", loseRoot, Ui("CoinIcon"), new Vector2(0, -170)).GetComponentInChildren<Text>();
+            // Dòng lý do thua nằm giữa tiêu đề popup và hàng thưởng (-170), cách nút (-300) xa.
+            Text loseReason = Label("LoseReason", loseRoot, "", 34, new Vector2(0, -85), "");
             Button loseRetry = TextButton("RetryButton", loseRoot, "BtnGreen", new Vector2(-190, -300), "retry");
             Button loseMenu = TextButton("MenuButton", loseRoot, "BtnOrange", new Vector2(190, -300), "menu");
 
@@ -602,7 +616,7 @@ namespace CatDefender.EditorTools
                 ("buyCostText", buyCost), ("repairCostText", repairCost),
                 ("buyButton", buy), ("repairButton", repair),
                 ("addonButtons", addonButtons), ("addonCountTexts", addonCounts),
-                ("winPanel", win), ("losePanel", lose), ("nextLevelButton", next),
+                ("winPanel", win), ("losePanel", lose), ("loseReasonText", loseReason), ("nextLevelButton", next),
                 ("restartButtons", new[] { loseRetry, pauseRetry }),
                 ("menuButtons", new[] { winMenu, loseMenu, pauseMenu }),
                 ("rewardCoinTexts", new[] { winCoins, loseCoins }),

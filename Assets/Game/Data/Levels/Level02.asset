@@ -22,26 +22,27 @@ MonoBehaviour:
   repairCost: 25
   repairAmount: 25
   mergeStrikeMultiplier: 4
+  mainLaneShare: 0.6
   firstWaveDelay: 5
   waveDelay: 5
   waves:
-  - groups:
-    - enemy: {fileID: 11400000, guid: 7386014c71ff142408768340eee142c0, type: 2}
-      count: 5
-      interval: 1.5
   - groups:
     - enemy: {fileID: 11400000, guid: 7386014c71ff142408768340eee142c0, type: 2}
       count: 7
       interval: 1.4285715
   - groups:
     - enemy: {fileID: 11400000, guid: 7386014c71ff142408768340eee142c0, type: 2}
-      count: 9
-      interval: 1.1111112
+      count: 10
+      interval: 1
   - groups:
     - enemy: {fileID: 11400000, guid: 7386014c71ff142408768340eee142c0, type: 2}
-      count: 11
-      interval: 0.90909094
+      count: 14
+      interval: 0.71428573
   - groups:
     - enemy: {fileID: 11400000, guid: 7386014c71ff142408768340eee142c0, type: 2}
-      count: 12
-      interval: 0.8333333
+      count: 18
+      interval: 0.5555556
+  - groups:
+    - enemy: {fileID: 11400000, guid: 7386014c71ff142408768340eee142c0, type: 2}
+      count: 21
+      interval: 0.47619048

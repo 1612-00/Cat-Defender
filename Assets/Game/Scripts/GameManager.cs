@@ -145,6 +145,7 @@ namespace CatDefender
             {
                 preparedWave = waves.CurrentWave;
                 activeLanes = Picker.Distinct(laneYs.Length, Picker.ActiveLaneCount(preparedWave, laneYs.Length), rng);
+                MainLane = activeLanes.Count > 0 ? activeLanes[rng.Next(activeLanes.Count)] : -1;
                 if (preparedWave > 1) OfferPerks();
             }
             // Chỉ báo khi đã chọn xong hàng cho wave kế tiếp (sân sạch), không báo hàng của wave cũ.
@@ -176,7 +177,8 @@ namespace CatDefender
             {
                 bool on = resting && activeLanes.Contains(i);
                 if (laneWarnings[i].enabled != on) laneWarnings[i].enabled = on;
-                if (on) laneWarnings[i].color = new Color(1f, 0.25f, 0.2f, alpha);
+                // Hàng chính nhấp nháy đậm gấp đôi để người chơi biết hàng nào sẽ đông quái nhất.
+                if (on) laneWarnings[i].color = new Color(1f, 0.25f, 0.2f, i == MainLane ? alpha * 2f : alpha);
             }
         }
 
@@ -185,9 +187,12 @@ namespace CatDefender
         /// <summary>Các hàng có quái của wave hiện tại (hoặc wave sắp tới khi đang nghỉ). Chỉ đọc.</summary>
         public IReadOnlyList<int> ActiveLanes => activeLanes;
 
-        /// <summary>Một hàng ngẫu nhiên trong các hàng đang có quái của wave hiện tại.</summary>
+        /// <summary>Hàng hút nhiều quái nhất của wave hiện tại (xem LevelData.mainLaneShare); -1 khi chưa chọn.</summary>
+        public int MainLane { get; private set; } = -1;
+
+        /// <summary>Hàng cho một con quái mới: hàng chính với xác suất mainLaneShare, còn lại chia đều các hàng khác.</summary>
         public int RandomLane() =>
-            activeLanes.Count > 0 ? activeLanes[rng.Next(activeLanes.Count)] : rng.Next(laneYs.Length);
+            activeLanes.Count > 0 ? Picker.WeightedLane(activeLanes, MainLane, level.mainLaneShare, rng) : rng.Next(laneYs.Length);
 
         /// <summary>Hàng ngay trên hoặc ngay dưới, chọn ngẫu nhiên, không ra ngoài sân.</summary>
         public int AdjacentLane(int lane)
@@ -386,11 +391,26 @@ namespace CatDefender
             }
         }
 
-        public void DamageWall(int amount)
+        readonly int[] laneWallDamage = new int[16];
+
+        /// <summary>Hàng bị thủng nhiều nhất (tổng sát thương tường thực nhận); -1 nếu chưa có.</summary>
+        public int WorstLane
+        {
+            get
+            {
+                int worst = -1, most = 0;
+                for (int i = 0; i < laneWallDamage.Length; i++)
+                    if (laneWallDamage[i] > most) { most = laneWallDamage[i]; worst = i; }
+                return worst;
+            }
+        }
+
+        public void DamageWall(int amount, int lane = -1)
         {
             if (WallShields > 0) return;
             int hpBeforeHit = wall.Hp;
             wall.Damage(amount);
+            if (lane >= 0 && lane < laneWallDamage.Length) laneWallDamage[lane] += hpBeforeHit - wall.Hp;
             if (hpBeforeHit > wall.MaxHp * 0.25f && wall.Hp <= wall.MaxHp * 0.25f && wall.Hp > 0)
                 AudioManager.Play(AudioCue.WallCritical);
             AudioManager.Play(AudioCue.WallHit);

@@ -22,66 +22,67 @@ MonoBehaviour:
   repairCost: 25
   repairAmount: 25
   mergeStrikeMultiplier: 4
+  mainLaneShare: 0.6
   firstWaveDelay: 5
   waveDelay: 5
   waves:
   - groups:
     - enemy: {fileID: 11400000, guid: 7386014c71ff142408768340eee142c0, type: 2}
-      count: 6
-      interval: 1.5
+      count: 14
+      interval: 0.71428573
     - enemy: {fileID: 11400000, guid: b8a8bb72d07fedb4abe05bf59b29b582, type: 2}
       count: 2
       interval: 1.5
   - groups:
     - enemy: {fileID: 11400000, guid: 909bc9d28c45333458724352a6aa8f84, type: 2}
-      count: 4
-      interval: 1.5
+      count: 9
+      interval: 1.1111112
     - enemy: {fileID: 11400000, guid: b8a8bb72d07fedb4abe05bf59b29b582, type: 2}
       count: 2
       interval: 1.5
   - groups:
     - enemy: {fileID: 11400000, guid: 2746e4bd1cd6f824ab457901caaa677d, type: 2}
-      count: 7
-      interval: 1.4285715
+      count: 18
+      interval: 0.5555556
     - enemy: {fileID: 11400000, guid: b8a8bb72d07fedb4abe05bf59b29b582, type: 2}
       count: 2
       interval: 1.5
   - groups:
     - enemy: {fileID: 11400000, guid: a874a43b2a8a580488d277ab70b135a8, type: 2}
-      count: 3
-      interval: 1.5
+      count: 8
+      interval: 1.25
     - enemy: {fileID: 11400000, guid: b8a8bb72d07fedb4abe05bf59b29b582, type: 2}
       count: 2
       interval: 1.5
   - groups:
     - enemy: {fileID: 11400000, guid: a4b56bcb4f8069f48898263a6a1d86f9, type: 2}
+      count: 14
+      interval: 0.71428573
+    - enemy: {fileID: 11400000, guid: b8a8bb72d07fedb4abe05bf59b29b582, type: 2}
+      count: 2
+      interval: 1.5
+  - groups:
+    - enemy: {fileID: 11400000, guid: 5d2e9f839e3927347b953015dbcdbb14, type: 2}
       count: 5
       interval: 1.5
     - enemy: {fileID: 11400000, guid: b8a8bb72d07fedb4abe05bf59b29b582, type: 2}
       count: 2
       interval: 1.5
   - groups:
-    - enemy: {fileID: 11400000, guid: 5d2e9f839e3927347b953015dbcdbb14, type: 2}
-      count: 2
-      interval: 1.5
-    - enemy: {fileID: 11400000, guid: b8a8bb72d07fedb4abe05bf59b29b582, type: 2}
-      count: 2
-      interval: 1.5
-  - groups:
     - enemy: {fileID: 11400000, guid: 2f44fe4cfe41b8048a73cba7aaea2682, type: 2}
-      count: 3
-      interval: 1.5
+      count: 9
+      interval: 1.1111112
     - enemy: {fileID: 11400000, guid: b8a8bb72d07fedb4abe05bf59b29b582, type: 2}
       count: 2
       interval: 1.5
   - groups:
     - enemy: {fileID: 11400000, guid: b8a8bb72d07fedb4abe05bf59b29b582, type: 2}
-      count: 2
+      count: 6
       interval: 1.5
   - groups:
     - enemy: {fileID: 11400000, guid: 7386014c71ff142408768340eee142c0, type: 2}
-      count: 23
-      interval: 0.4347826
+      count: 40
+      interval: 0.4
     - enemy: {fileID: 11400000, guid: b8a8bb72d07fedb4abe05bf59b29b582, type: 2}
       count: 2
       interval: 1.5

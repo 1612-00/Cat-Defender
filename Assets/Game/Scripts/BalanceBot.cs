@@ -9,7 +9,7 @@ using UnityEngine.SceneManagement;
 namespace CatDefender
 {
     /// <summary>Cách bot đặt mèo: Careless rải ngẫu nhiên như người chơi ẩu; Sensible dồn mèo mạnh vào hàng có cảnh báo.</summary>
-    public enum BotPolicy { Careless, Sensible }
+    public enum BotPolicy { Careless, Sensible, Thrower }
 
     /// <summary>
     /// Công cụ gỡ lỗi (D.1 trong gameplay-depth-plan): bot chơi ẩu để đo độ khó. Chỉ chạy khi gọi <see cref="Run"/> trong Play mode.
@@ -144,6 +144,7 @@ namespace CatDefender
         void Act(BoardView board)
         {
             int[] lv = Levels(board);
+            if (policy == BotPolicy.Thrower) { ActThrower(board, lv); return; }
             // Ghép làm mất một con mèo, tức mất một hàng được che. Bot hợp lý chỉ ghép khi sau đó vẫn đủ mèo cho
             // mọi hàng có quái; bot ẩu giữ ít nhất 3 con.
             int catCount = 0;
@@ -172,6 +173,24 @@ namespace CatDefender
             var lanes = new int[lv.Length];
             for (int i = 0; i < lanes.Length; i++) lanes[i] = board.SlotLane(i);
             if (FindRearrangeMove(lv, lanes, game.ActiveLanes, out int f, out int t)) MoveCat(board, f, t);
+        }
+
+        /// <summary>Thrower: mua mèo, rồi phóng mèo cấp thấp nhất vào con quái gần tường nhất đã vào màn hình. Không ghép, không sắp xếp.</summary>
+        void ActThrower(BoardView board, int[] lv)
+        {
+            if (game.CanBuyCat) { game.BuyCat(); lv = Levels(board); }
+            Enemy front = null;
+            foreach (Enemy e in game.Enemies)
+                if (e.Alive && e.transform.position.x <= 9f && (front == null || e.transform.position.x < front.transform.position.x)) front = e;
+            if (front == null) return;
+            int slot = -1;
+            for (int i = 0; i < lv.Length; i++)
+                if (lv[i] > 0 && (slot < 0 || lv[i] < lv[slot])) slot = i;
+            if (slot < 0) return;
+            Vector2 target = front.transform.position;
+            if (!game.IsLaunchZone(target)) return;
+            board.Press(board.SlotWorld(slot));
+            board.Release(target);
         }
 
         /// <summary>

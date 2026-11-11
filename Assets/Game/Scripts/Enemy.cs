@@ -119,7 +119,7 @@ namespace CatDefender
             attackTimer -= dt;
             if (attackTimer > 0) return;
             attackTimer += data.attackInterval;
-            game.DamageWall(data.damage);
+            game.DamageWall(data.damage, Lane);
         }
 
         void BossAbilities(float dt)

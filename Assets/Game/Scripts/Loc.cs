@@ -11,6 +11,7 @@ namespace CatDefender
         static readonly Dictionary<string, string[]> Table = new Dictionary<string, string[]>
         {
             { "wave", new[] { "Wave {0} / {1}", "Đợt {0} / {1}" } },
+            { "lose_reason", new[] { "Lane {0} took the most hits", "Hàng {0} bị thủng nhiều nhất" } },
             { "level", new[] { "Level {0}", "Màn {0}" } },
             { "buy_cat", new[] { "Buy Cat", "Mua mèo" } },
             { "repair", new[] { "Repair Wall", "Sửa tường" } },

@@ -19,6 +19,8 @@ namespace CatDefender
         [Header("Kết thúc level")]
         [SerializeField] GameObject winPanel;
         [SerializeField] GameObject losePanel;
+        /// <summary>Dòng "hàng nào bị thủng nhiều nhất" trên popup thua.</summary>
+        [SerializeField] Text loseReasonText;
         [SerializeField] Button nextLevelButton;
         [SerializeField] Button[] restartButtons;
         [SerializeField] Button[] menuButtons;
@@ -89,6 +91,9 @@ namespace CatDefender
 
             winPanel.SetActive(game.State == GameState.Won);
             losePanel.SetActive(game.State == GameState.Lost);
+            int worst = game.WorstLane;
+            loseReasonText.gameObject.SetActive(worst >= 0);
+            if (worst >= 0) loseReasonText.text = Loc.T("lose_reason", worst + 1);
             pausePanel.SetActive(playing && game.UserPaused);
             nextLevelButton.gameObject.SetActive(game.HasNextLevel);
             foreach (Text t in rewardCoinTexts) t.text = "+" + game.RewardCoins;

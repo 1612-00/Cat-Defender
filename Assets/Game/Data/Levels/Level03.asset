@@ -22,23 +22,13 @@ MonoBehaviour:
   repairCost: 25
   repairAmount: 25
   mergeStrikeMultiplier: 4
+  mainLaneShare: 0.6
   firstWaveDelay: 5
   waveDelay: 5
   waves:
   - groups:
     - enemy: {fileID: 11400000, guid: 7386014c71ff142408768340eee142c0, type: 2}
-      count: 3
-      interval: 1.5
-    - enemy: {fileID: 11400000, guid: 909bc9d28c45333458724352a6aa8f84, type: 2}
-      count: 2
-      interval: 1.5
-  - groups:
-    - enemy: {fileID: 11400000, guid: 909bc9d28c45333458724352a6aa8f84, type: 2}
-      count: 3
-      interval: 1.5
-  - groups:
-    - enemy: {fileID: 11400000, guid: 7386014c71ff142408768340eee142c0, type: 2}
-      count: 6
+      count: 5
       interval: 1.5
     - enemy: {fileID: 11400000, guid: 909bc9d28c45333458724352a6aa8f84, type: 2}
       count: 2
@@ -49,8 +39,19 @@ MonoBehaviour:
       interval: 1.5
   - groups:
     - enemy: {fileID: 11400000, guid: 7386014c71ff142408768340eee142c0, type: 2}
-      count: 8
-      interval: 1.25
+      count: 10
+      interval: 1
     - enemy: {fileID: 11400000, guid: 909bc9d28c45333458724352a6aa8f84, type: 2}
-      count: 2
+      count: 3
+      interval: 1.5
+  - groups:
+    - enemy: {fileID: 11400000, guid: 909bc9d28c45333458724352a6aa8f84, type: 2}
+      count: 9
+      interval: 1.1111112
+  - groups:
+    - enemy: {fileID: 11400000, guid: 7386014c71ff142408768340eee142c0, type: 2}
+      count: 14
+      interval: 0.71428573
+    - enemy: {fileID: 11400000, guid: 909bc9d28c45333458724352a6aa8f84, type: 2}
+      count: 4
       interval: 1.5

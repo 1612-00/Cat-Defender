@@ -10,7 +10,7 @@ namespace CatDefender
         public float fireInterval = 0.8f;
         public float bulletSpeed = 22f;
         /// <summary>Phóng mèo: sát thương nổ = damage × hệ số này.</summary>
-        public float launchMultiplier = 12f;
+        public float launchMultiplier = 6f;
         /// <summary>Phóng mèo: bán kính nổ.</summary>
         public float launchRadius = 1.8f;
         public Sprite bulletSprite;

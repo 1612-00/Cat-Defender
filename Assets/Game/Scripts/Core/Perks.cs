@@ -55,6 +55,20 @@ namespace CatDefender
             return result;
         }
 
+        /// <summary>
+        /// Chọn hàng cho một con quái: hàng chính với xác suất <paramref name="share"/>, còn lại chia đều cho các hàng khác.
+        /// Chỉ có một hàng thì luôn hàng đó.
+        /// </summary>
+        public static int WeightedLane(IReadOnlyList<int> activeLanes, int mainLane, float share, Random rng)
+        {
+            var others = new List<int>(activeLanes.Count);
+            foreach (int l in activeLanes) if (l != mainLane) others.Add(l);
+            if (others.Count == 0) return activeLanes[0];
+            bool mainActive = others.Count < activeLanes.Count;
+            if (mainActive && rng.NextDouble() < share) return mainLane;
+            return others[rng.Next(others.Count)];
+        }
+
         /// <summary>Số hàng có quái của wave thứ <paramref name="wave"/> (tính từ 1): 2 hàng lúc đầu, thêm 1 sau mỗi 2 wave.</summary>
         public static int ActiveLaneCount(int wave, int laneCount) => Math.Min(laneCount, 2 + (wave - 1) / 2);
     }

@@ -33,6 +33,8 @@ namespace CatDefender
         public int repairAmount = 25;
         /// <summary>Merge Strike: sát thương = sát thương mèo mới × hệ số này.</summary>
         public float mergeStrikeMultiplier = 4f;
+        /// <summary>Tỉ lệ quái đi vào hàng chính của wave; phần còn lại chia đều các hàng khác.</summary>
+        public float mainLaneShare = 0.6f;
         public float firstWaveDelay = 5f;
         public float waveDelay = 5f;
         public List<Wave> waves = new List<Wave>();
