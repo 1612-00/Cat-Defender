@@ -837,7 +837,7 @@ namespace CatDefender.EditorTools
                 case AudioCue.BossAppear:
                 case AudioCue.LevelComplete:
                 case AudioCue.GameOver:
-                case AudioCue.WaveStart:
+                case AudioCue.WaveStart: return 0.35f;
                 case AudioCue.WallCritical: return 0.70f;
                 case AudioCue.Shield:
                 case AudioCue.Skill:

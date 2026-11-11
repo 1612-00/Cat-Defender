@@ -255,7 +255,7 @@ MonoBehaviour:
     bus: 0
   - cue: 30
     clip: {fileID: 8300000, guid: 83c15a48304927843b99be2cf0cf5c1a, type: 3}
-    volume: 0.7
+    volume: 0.35
     pitchVariation: 0
     volumeVariation: 0
     minInterval: 0.06
