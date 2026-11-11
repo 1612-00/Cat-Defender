@@ -30,6 +30,18 @@ namespace CatDefender
 
         public bool HasEmptySlot => board.FirstEmpty() >= 0;
 
+        /// <summary>Số ô trên bàn.</summary>
+        public int SlotCount => slots.Length;
+
+        /// <summary>Cấp mèo cao nhất.</summary>
+        public int MaxLevel => catsByLevel.Length;
+
+        /// <summary>Vị trí thế giới của ô i.</summary>
+        public Vector2 SlotWorld(int i) => slots[i];
+
+        /// <summary>Cấp mèo ở ô i; 0 là ô trống.</summary>
+        public int LevelAt(int i) => board.LevelAt(i);
+
         /// <summary>Vị trí thùng rác trong thế giới. Canvas dạng overlay nên toạ độ của icon chính là pixel màn hình.</summary>
         public Vector2 TrashWorld => cam.ScreenToWorldPoint(trashIcon.position);
 

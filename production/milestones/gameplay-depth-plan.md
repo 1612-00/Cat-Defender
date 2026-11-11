@@ -65,6 +65,66 @@ Hiện trạng chưa commit: ghép chỉ hợp lệ giữa hai ô kề nhau; đ�
 
 ---
 
+## Bước D: Chỉnh thô độ khó level 1–6 (2–3 giờ, chèn ngày 2026-11-12)
+
+**Vì sao làm trước bước A:** chủ dự án chơi màn 1 thấy xếp bừa, ghép và phóng bừa vẫn thắng. Khi đánh kiểu gì cũng thắng thì không đánh giá được cơ chế nào tạo chiến thuật.
+
+**Số liệu trước khi chỉnh:** wave 1 màn 1 có tổng 100 máu quái, wave 5 có 240; 3 mèo đầu màn bắn 15 sát thương/giây; tường 150 máu; một cú phóng mèo cấp 1 gây 48 sát thương.
+
+**Mục tiêu:** chơi ẩu thì thua từ màn 3–4, chơi đúng thì thắng. Màn 1–2 vẫn gần như không thể thua. Chỉ chỉnh level 1–6; level 7–30 dùng chung công thức nên sẽ khó lên theo, cân bằng lại ở mốc 5.
+
+### D.1 Bot chơi ẩu để đo (agent viết code)
+
+Một bot chạy trong Play mode, chơi từng level nhiều lần ở tốc độ cao và ghi kết quả.
+
+| Thành phần | Quy tắc |
+|---|---|
+| Hành vi | Mỗi 0,25 giây (giờ game): đủ coin và còn ô thì mua mèo; có hai mèo cùng cấp thì ghép; có bảng thẻ thì chọn thẻ đầu. Không xếp mèo theo hàng, không sửa tường, không dùng addon, không phóng mèo. |
+| Cách gọi | Hàm tĩnh `BalanceBot.Run(int[] levelIndices, int runsPerLevel, float speed)` gọi được từ `unity command script eval` khi đang Play mode. |
+| Tốc độ | Đặt lại `Time.timeScale = speed` mỗi khung hình khi game không tạm dừng. Bật `Application.runInBackground` trong lúc chạy. |
+| Bảo vệ tiến trình lưu | Trước khi chạy: sao lưu chuỗi lưu trong PlayerPrefs ra bộ nhớ và ra file `Library/balance_bot_save_backup.json`, rồi đặt tiến trình về mặc định (không nâng cấp) để số đo không phụ thuộc người chơi. Chạy xong hoặc thoát Play mode: khôi phục nguyên trạng. |
+| Kết quả | Mỗi lượt ghi một dòng log `BALANCE level=… run=… result=Won/Lost wall=…% wave=…/… seconds=…`. Chạy xong ghi bảng tổng hợp vào `production/balance/bot-report.md` (ghi đè). |
+| Giới hạn | Mỗi lượt tối đa 600 giây giờ game; quá thì ghi `Timeout`. |
+
+Để bot ghép được, `BoardView` thêm API đọc: số ô, vị trí ô, cấp mèo tại ô. Bot ghép bằng `Press/Release` có sẵn.
+
+### D.2 Núm chỉnh độ khó (agent viết code, phiên chính chỉnh số)
+
+| Núm | Hiện tại | Nháp mới | Nơi đặt |
+|---|---|---|---|
+| Hệ số lượng quái theo level | `1 + 0,04 × (level − 1)` | Bảng cho level 1–6: 1,0 / 1,4 / 1,9 / 2,4 / 2,9 / 3,4; sau level 6 tăng 4% mỗi level | Hằng có tên ở đầu `GameBuilder` |
+| Tăng lượng quái theo wave | `1 + 0,35 × wave` | `1 + 0,5 × wave` | như trên |
+| Số quái tối đa một nhóm | 25 | 40 | như trên |
+| Máu tường | 150 | 100 | `LevelData.wallHp` |
+| Hệ số phóng mèo | 12 | 6 | `CatData.launchMultiplier` |
+| Tỉ lệ quái dồn vào hàng chính | chia đều các hàng đang mở | 0,6 | `LevelData.mainLaneShare` (mới) |
+
+**Hàng chính:** khi chọn hàng cho wave kế tiếp, lấy ngẫu nhiên một hàng trong số đó làm hàng chính. Mỗi quái sinh ra vào hàng chính với xác suất `mainLaneShare`, còn lại chia đều cho các hàng khác. Dải cảnh báo của hàng chính sáng gấp đôi các hàng còn lại. Luật chọn hàng là hàm thuần trong `Core/`, có test.
+
+### D.3 Màn hình thua nói lý do (agent viết code)
+
+Cộng dồn sát thương vào tường theo hàng của quái gây ra. Khi thua, popup hiện thêm một dòng: "Hàng {số} bị thủng nhiều nhất" (có bản tiếng Anh, qua `Loc`). Hàng đánh số từ 1, từ trên xuống.
+
+### D.4 Phiên chính chỉnh số bằng bot
+
+Chạy bot 3 lượt mỗi level cho level 1–6, sửa các hằng ở D.2 cho tới khi đạt:
+
+| Level | Bot chơi ẩu |
+|---|---|
+| 1 | Thắng 3/3, tường còn từ 50% |
+| 2 | Thắng ít nhất 2/3 |
+| 3 | Thắng 1–2/3 |
+| 4–6 | Thua ít nhất 2/3 |
+
+**Hạn chế của phép đo:** bot chỉ cho biết chơi ẩu có thua không. "Chơi đúng thì thắng" phải do chủ dự án chơi thử xác nhận.
+
+**Chủ dự án chơi thử, trả lời:**
+- Màn 3–5 có thắng được khi xếp mèo theo hàng báo trước và phóng mèo đúng lúc không?
+- Khi thua, bạn có hiểu vì sao thua không?
+- Màn nào thấy bất công (không cách nào thắng)?
+
+---
+
 ## Bước A: Ba họ mèo (2–3 giờ)
 
 **Luật:** 15 sprite mèo chia thành 3 họ × 5 bậc. Chỉ ghép được hai mèo cùng họ, cùng bậc.

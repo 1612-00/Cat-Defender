@@ -8,7 +8,7 @@ namespace CatDefender
     {
         // ponytail: lưu một chuỗi JSON trong PlayerPrefs. Đủ cho dữ liệu vài trăm byte;
         // chuyển sang file + bản sao lưu nếu dữ liệu lớn lên hoặc cần đồng bộ đám mây.
-        const string Key = "save_v1";
+        public const string Key = "save_v1";
 
         static SaveData data;
         static MetaConfig config;
@@ -61,6 +61,13 @@ namespace CatDefender
         {
             PlayerPrefs.SetString(Key, JsonUtility.ToJson(Data));
             PlayerPrefs.Save();
+            Changed?.Invoke();
+        }
+
+        /// <summary>Đọc lại tiến trình từ PlayerPrefs (dùng khi chuỗi lưu bị thay từ bên ngoài, ví dụ BalanceBot).</summary>
+        public static void Reload()
+        {
+            data = Load();
             Changed?.Invoke();
         }
 
